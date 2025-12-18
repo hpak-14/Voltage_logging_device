@@ -7,7 +7,7 @@ extern SPI_HandleTypeDef hspi2;
 void Flash_WaitBusy(void);
 void Flash_cmd(uint8_t cmd, uint8_t CS);
 void Flash_Transmit(uint8_t num_pin, uint32_t addr, uint8_t *data_TX);
-void Flash_Receive(uint8_t num_pin, uint32_t addr);
+void Flash_Receive(uint8_t num_pin, uint32_t addr, uint8_t *rxbuf);
 void Flash_SectorErase(uint8_t num_pin, uint32_t addr);
 void Memory(uint8_t *data_TX);
 

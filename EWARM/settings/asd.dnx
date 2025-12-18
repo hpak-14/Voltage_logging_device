@@ -13,7 +13,7 @@
         <MemConfigValue>C:\Program Files\IAR Systems\Embedded Workbench 9.2\arm\config\debugger\ST\STM32F207VE.ddf</MemConfigValue>
     </PlDriver>
     <DebugChecksum>
-        <Checksum>873454835</Checksum>
+        <Checksum>4266149520</Checksum>
     </DebugChecksum>
     <Exceptions>
         <StopOnUncaught>_ 0</StopOnUncaught>
@@ -94,12 +94,16 @@
     <watch_formats>
         <Fmt0>{W}42:CRCValue	4	0</Fmt0>
         <Fmt1>{W}42:SPI1_CR1	5	0</Fmt1>
-        <Fmt2>{W}42:crc	4	0</Fmt2>
-        <Fmt3>{W}42:experement	3	0</Fmt3>
-        <Fmt4>{W}42:mem_CS	1	0</Fmt4>
-        <Fmt5>{W}42:mem_addr	1	0</Fmt5>
-        <Fmt6>{W}42:rxCRC	4	0</Fmt6>
-        <Fmt7>{W}42:tempModbusRx[0]	4	0</Fmt7>
+        <Fmt2>{W}42:addr_flash	1	0</Fmt2>
+        <Fmt3>{W}42:addr_test	2	0</Fmt3>
+        <Fmt4>{W}42:crc	4	0</Fmt4>
+        <Fmt5>{W}42:experement	3	0</Fmt5>
+        <Fmt6>{W}42:fa	1	0</Fmt6>
+        <Fmt7>{W}42:masa	1	0</Fmt7>
+        <Fmt8>{W}42:mem_CS	1	0</Fmt8>
+        <Fmt9>{W}42:mem_addr	1	0</Fmt9>
+        <Fmt10>{W}42:rxCRC	4	0</Fmt10>
+        <Fmt11>{W}42:tempModbusRx[0]	4	0</Fmt11>
     </watch_formats>
     <Trace2>
         <Enabled>0</Enabled>
