@@ -4,7 +4,10 @@
 #include "stm32f2xx_hal_dma.h"
 
 extern SPI_HandleTypeDef hspi2;
-void Flash_WaitBusy(void);
+extern void delay(uint32_t tik);
+void Flash_ChipErase(uint8_t num_pin);
+void Memory_test(void);
+void Flash_WaitBusy(uint8_t num_pin);
 void Flash_cmd(uint8_t cmd, uint8_t CS);
 void Flash_Transmit(uint8_t num_pin, uint32_t addr);
 void Flash_Receive(uint8_t num_pin, uint32_t addr);

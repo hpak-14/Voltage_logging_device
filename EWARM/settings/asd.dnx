@@ -13,7 +13,7 @@
         <MemConfigValue>C:\Program Files\IAR Systems\Embedded Workbench 9.2\arm\config\debugger\ST\STM32F207VE.ddf</MemConfigValue>
     </PlDriver>
     <DebugChecksum>
-        <Checksum>203184228</Checksum>
+        <Checksum>2334663485</Checksum>
     </DebugChecksum>
     <Exceptions>
         <StopOnUncaught>_ 0</StopOnUncaught>
@@ -83,7 +83,7 @@
         <Fmt7>uint16_t[100]	3	0</Fmt7>
         <Fmt8>uint16_t[256]	4	0</Fmt8>
         <Fmt9>uint8_t[19]	4	0</Fmt9>
-        <Fmt10>uint8_t[256]	4	0</Fmt10>
+        <Fmt10>uint8_t[256]	3	0</Fmt10>
         <Fmt11>uint8_t[259]	3	0</Fmt11>
         <Fmt12>uint8_t[260]	3	0</Fmt12>
         <Fmt13>uint8_t[261]	3	0</Fmt13>
@@ -94,10 +94,16 @@
     <watch_formats>
         <Fmt0>{W}42:CRCValue	4	0</Fmt0>
         <Fmt1>{W}42:SPI1_CR1	5	0</Fmt1>
-        <Fmt2>{W}42:crc	4	0</Fmt2>
-        <Fmt3>{W}42:experement	3	0</Fmt3>
-        <Fmt4>{W}42:rxCRC	4	0</Fmt4>
-        <Fmt5>{W}42:tempModbusRx[0]	4	0</Fmt5>
+        <Fmt2>{W}42:addr_flash	1	0</Fmt2>
+        <Fmt3>{W}42:addr_test	2	0</Fmt3>
+        <Fmt4>{W}42:crc	4	0</Fmt4>
+        <Fmt5>{W}42:experement	3	0</Fmt5>
+        <Fmt6>{W}42:fa	1	0</Fmt6>
+        <Fmt7>{W}42:masa	1	0</Fmt7>
+        <Fmt8>{W}42:mem_CS	1	0</Fmt8>
+        <Fmt9>{W}42:mem_addr	1	0</Fmt9>
+        <Fmt10>{W}42:rxCRC	4	0</Fmt10>
+        <Fmt11>{W}42:tempModbusRx[0]	4	0</Fmt11>
     </watch_formats>
     <Trace2>
         <Enabled>0</Enabled>
@@ -159,7 +165,8 @@
         <Bp4>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Peripheral\Src\ADS131E08.c}.532.5" 0 0 1 "" 0 "" 0</Bp4>
         <Bp5>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Peripheral\Src\ADS131E08.c}.541.5" 0 0 1 "" 0 "" 0</Bp5>
         <Bp6>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Peripheral\Src\ADS131E08.c}.543.5" 0 0 1 "" 0 "" 0</Bp6>
-        <Count>7</Count>
+        <Bp7>_ 0 "EMUL_CODE" "0x2" 0 0 1 "" 0 "" 0</Bp7>
+        <Count>8</Count>
     </Breakpoints2>
     <Aliases>
         <Count>0</Count>

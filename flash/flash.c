@@ -8,7 +8,7 @@ uint32_t addr = 0x000000;     // адресс
 uint8_t txbuf [1 + 3 + 256] = {0};  // 1 байт комада + 3 байта адреса + 256 байт данных
 uint8_t rxbuf [256] = {0};      // 256 байт данных
 uint8_t data_TX [256] = {
-    13, 88, 37, 4, 5, 6, 7, 8, 9, 10,
+    65, 11, 99, 36, 33, 7, 7, 8, 9, 10,
     11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
     21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
     31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
@@ -54,10 +54,11 @@ void FLASH_CS_HIGH(uint8_t num) {
 void Flash_cmd(uint8_t cmd, uint8_t CS)
 {
   CS_num = CS;
-  HAL_Delay(10);
+  delay(10);
   FLASH_CS_LOW(CS);
-  HAL_Delay(5);
+  delay(10);
   HAL_SPI_Transmit_DMA(&hspi2, &cmd, 1);
+  while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY);
 }
 /*
         Flash_Transmit( ? ???? ?????? (0-7) , ?????? ?????? (0x000000) );
@@ -70,15 +71,13 @@ void Flash_Transmit(uint8_t num_pin, uint32_t addr)
 {
   CS_num = num_pin;
   Flash_cmd(0x06, num_pin);
-  HAL_Delay(10);
+  delay(10);
   Flash_cmd(0x98, num_pin);
-  HAL_Delay(10);
-  Flash_SectorErase(num_pin, addr);
-  HAL_Delay(10);
-  Flash_WaitBusy();
-    HAL_Delay(20);//
-  //FLASH_CS_HIGH(num_pin);
-  //HAL_Delay(10);
+  delay(10);
+  //Flash_SectorErase(num_pin, addr);
+  //delay(10);
+  //Flash_WaitBusy(num_pin);
+  //delay(10);
   Flash_cmd(CMD_WRITE_ENABLE, num_pin );  
   txbuf[0] = CMD_PAGE_PROGRAM;
   txbuf[1] = (addr >> 16) & 0xFF;
@@ -86,12 +85,11 @@ void Flash_Transmit(uint8_t num_pin, uint32_t addr)
   txbuf[3] = addr & 0xFF;
   
   memcpy(&txbuf[4], data_TX, 256);
-  FLASH_CS_HIGH(CS_num);
-  HAL_Delay(20);
-  
   FLASH_CS_LOW(num_pin);
-  HAL_Delay(10);
+  delay(10);
   HAL_SPI_Transmit_DMA(&hspi2, txbuf, 260);
+  while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY);
+  Flash_WaitBusy(num_pin);
 }
 
 
@@ -106,16 +104,17 @@ void Flash_Receive(uint8_t num_pin, uint32_t addr){
   };
   
   FLASH_CS_LOW(num_pin);
-  HAL_Delay(10);
+  delay(10);
   HAL_SPI_Transmit(&hspi2, tx_buffer, 4, 1000);
   HAL_SPI_Receive_DMA(&hspi2, rxbuf, 256);
+  while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY);
 }
 
 
 void Flash_SectorErase(uint8_t num_pin, uint32_t addr)
 {
   Flash_cmd(CMD_WRITE_ENABLE, num_pin);
-  HAL_Delay(10);
+  delay(10);
   uint8_t tx_buffer[4] = {
     CMD_SECTOR_ERASE,
     (addr >> 16) & 0xFF,
@@ -124,26 +123,56 @@ void Flash_SectorErase(uint8_t num_pin, uint32_t addr)
   };
   
   FLASH_CS_LOW(num_pin);
-  HAL_Delay(10);
+  delay(10);
   HAL_SPI_Transmit(&hspi2, tx_buffer, 4, 100);
-  HAL_Delay(10);
+  delay(10);
   FLASH_CS_HIGH(num_pin);
   
 }
+ 
+void Flash_ChipErase(uint8_t num_pin){
+  Flash_cmd(CMD_WRITE_ENABLE, num_pin);
+  delay(10);
+  Flash_cmd(CMD_CHIP_ERASE, num_pin);
+  Flash_WaitBusy(num_pin);
+}
 
 
-void Flash_WaitBusy(void)
+void Flash_WaitBusy(uint8_t num_pin)
 {
     uint8_t cmd = 0x05;
-    uint8_t status;
-    FLASH_CS_LOW(0);   
-    HAL_Delay(5);
-
-    do {     
-        HAL_SPI_Transmit(&hspi2, &cmd, 1, HAL_MAX_DELAY);
-        FLASH_CS_LOW(0);
-        HAL_SPI_Receive(&hspi2, &status, 1, HAL_MAX_DELAY);
+    uint8_t status = 0;
+    FLASH_CS_LOW(num_pin);
+    HAL_SPI_Transmit(&hspi2, &cmd, 1, 100);
+    do {
+        HAL_SPI_Receive(&hspi2, &status, 1, 100);
     } while (status & 0x01);
-    HAL_Delay(5);
-    FLASH_CS_HIGH(0);
+    FLASH_CS_HIGH(num_pin);
 }
+
+
+void Memory_test(void){
+    Flash_Transmit(0 ,0 );
+    Flash_Receive(0 ,0 );
+
+  
+}
+
+/*
+void Memory(uint8_t *data_TX){
+  addr_flash = 0;
+  masa |= (0b11111 << 27);          // 5 ??? ?????? ?????????? ? 1
+  mem_CS = (masa >> 24) & 0b111;    // ??? 24,25,26 ??? CS
+  addr_flash = masa & 0xFFFFFF;
+  Flash_Transmit(mem_CS, addr_flash, &data_TX[0]);
+  masa++;
+}
+
+void Memory_test(void){
+  if (addr_test < 0x7FFFFF){
+    Flash_Receive(0, addr_test, &rxbuf_test[addr_test * 16]);
+    addr_test ++;
+  }
+  
+}
+*/

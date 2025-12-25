@@ -129,6 +129,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   ADS131E0_RESET();
+  Flash_ChipErase(0);
   memset(Code_ADC, 0, sizeof(Code_ADC));
   schet = 0;
   
@@ -153,16 +154,24 @@ int main(void)
         experement = 0;
     }
         if (experement == 2){
-        memset(ADC_data, 0, sizeof(ADC_data));
-        cikl = 0;
+        Flash_Transmit(0 ,0 );
         experement = 0;
     }
-     
+        if (experement == 3){
+        Flash_Receive(0 ,0 );
+        experement = 0;
+    }
+            if (experement == 4){
+        Memory_test();
+        experement = 0;
+    }
     
     
     
     
+
     
+
     uartDataHandler();  // Обработка полученных данных
     /* USER CODE END WHILE */
 
@@ -285,7 +294,7 @@ static void MX_SPI2_Init(void)
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -466,7 +475,9 @@ static void MX_GPIO_Init(void)
   {
       if (hspi == &hspi2)      
       {
+        delay(10);
           FLASH_CS_HIGH(CS_num);
+          
       }
   }
 
@@ -474,6 +485,7 @@ static void MX_GPIO_Init(void)
   {
       if (hspi == &hspi2)      
       {
+        delay(10);
          FLASH_CS_HIGH(CS_num);
       }
   }
@@ -507,6 +519,16 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 
          // cikl++;
      // }         
+          
+      if (cikl <= 16) {
+          memcpy(&ADC_data[cikl * 16],  &ADC_rx_data[3], 16);
+          cikl++;
+      }
+      if (cikl == 16){
+          Flash_Transmit(0 ,0);
+          Flash_Receive(0, 0);
+          cikl = 0;
+      }
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
