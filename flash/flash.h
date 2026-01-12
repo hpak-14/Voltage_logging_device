@@ -4,13 +4,16 @@
 #include "stm32f2xx_hal_dma.h"
 
 extern SPI_HandleTypeDef hspi2;
+extern uint8_t rxbuf [256];//
+extern uint8_t txbuf [256];//
+extern uint8_t data_TX [256];
 extern void delay(uint32_t tik);
 void Flash_ChipErase(uint8_t num_pin);
 void Memory_test(void);
 void Flash_WaitBusy(uint8_t num_pin);
 void Flash_cmd(uint8_t cmd, uint8_t CS);
-void Flash_Transmit(uint8_t num_pin, uint32_t addr);
-void Flash_Receive(uint8_t num_pin, uint32_t addr);
+void Flash_Transmit(uint8_t num_pin, uint32_t addr, uint8_t *data_TX);
+void Flash_Receive(uint8_t num_pin, uint32_t addr, uint8_t *rxbuf);
 void Flash_SectorErase(uint8_t num_pin, uint32_t addr);
 
 void FLASH_CS_LOW(uint8_t num);

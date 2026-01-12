@@ -153,14 +153,15 @@ int main(void)
         ADC_START_ON
         experement = 0;
     }
-        if (experement == 2){
-        Flash_Transmit(0 ,0 );
-        experement = 0;
-    }
-        if (experement == 3){
-        Flash_Receive(0 ,0 );
-        experement = 0;
-    }
+    //    if (experement == 2){
+     //   Flash_Transmit(0 ,0, &data_TX[0]);
+   //    experement = 0;
+  //  }
+    HAL_Delay(100);
+  //      if (experement == 3){
+          Flash_Receive(0 ,0, &rxbuf[0]);
+  //      experement = 0;
+  //  }
             if (experement == 4){
         Memory_test();
         experement = 0;
@@ -525,8 +526,8 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
           cikl++;
       }
       if (cikl == 16){
-          Flash_Transmit(0 ,0);
-          Flash_Receive(0, 0);
+     //     Flash_Transmit(0 ,0);
+     //     Flash_Receive(0, 0);
           cikl = 0;
       }
 }

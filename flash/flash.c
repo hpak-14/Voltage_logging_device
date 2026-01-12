@@ -4,11 +4,11 @@ uint8_t cmd = 0;
 uint8_t CS_num = 0;
 uint8_t DMA_TX_Finish = 0;
 uint8_t DMA_RX_Finish = 0;
-uint32_t addr = 0x000000;     // адресс
-uint8_t txbuf [1 + 3 + 256] = {0};  // 1 байт комада + 3 байта адреса + 256 байт данных
-uint8_t rxbuf [256] = {0};      // 256 байт данных
+uint32_t addr = 0x000000;
+uint8_t rxbuf [256] = {0};  
+uint8_t txbuf [256] = {0};  
 uint8_t data_TX [256] = {
-    65, 11, 99, 36, 33, 7, 7, 8, 9, 10,
+    27, 18, 128, 36, 33, 7, 7, 8, 9, 10,
     11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
     21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
     31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
@@ -60,30 +60,21 @@ void Flash_cmd(uint8_t cmd, uint8_t CS)
   HAL_SPI_Transmit_DMA(&hspi2, &cmd, 1);
   while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY);
 }
-/*
-        Flash_Transmit( ? ???? ?????? (0-7) , ?????? ?????? (0x000000) );
-        Flash_Receive (  ? ???? ?????? (0-7) , ?????? ?????? (0x000000) );
-        rxbuf [256] 
-        data_TX [256]
-*/
 
-void Flash_Transmit(uint8_t num_pin, uint32_t addr)
+
+void Flash_Transmit(uint8_t num_pin, uint32_t addr, uint8_t *data_TX)
 {
+  uint8_t txbuf [1 + 3 + 256] = {0};
   CS_num = num_pin;
   Flash_cmd(0x06, num_pin);
   delay(10);
   Flash_cmd(0x98, num_pin);
   delay(10);
-  //Flash_SectorErase(num_pin, addr);
-  //delay(10);
-  //Flash_WaitBusy(num_pin);
-  //delay(10);
   Flash_cmd(CMD_WRITE_ENABLE, num_pin );  
   txbuf[0] = CMD_PAGE_PROGRAM;
   txbuf[1] = (addr >> 16) & 0xFF;
   txbuf[2] = (addr >> 8) & 0xFF;
   txbuf[3] = addr & 0xFF;
-  
   memcpy(&txbuf[4], data_TX, 256);
   FLASH_CS_LOW(num_pin);
   delay(10);
@@ -93,7 +84,7 @@ void Flash_Transmit(uint8_t num_pin, uint32_t addr)
 }
 
 
-void Flash_Receive(uint8_t num_pin, uint32_t addr){
+void Flash_Receive(uint8_t num_pin, uint32_t addr, uint8_t *rxbuf){
   
   CS_num = num_pin;
   uint8_t tx_buffer[4] = {
@@ -152,10 +143,8 @@ void Flash_WaitBusy(uint8_t num_pin)
 
 
 void Memory_test(void){
-    Flash_Transmit(0 ,0 );
-    Flash_Receive(0 ,0 );
-
-  
+    Flash_Transmit(0 ,0, &data_TX[0]);
+    Flash_Receive(0 ,0, &rxbuf[0]);
 }
 
 /*
