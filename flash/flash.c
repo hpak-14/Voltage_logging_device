@@ -2,13 +2,13 @@
 
 uint8_t cmd = 0;
 uint8_t CS_num = 0;
-uint8_t DMA_TX_Finish = 0;
+uint32_t DMA_TX_Finish = 0;
 uint8_t DMA_RX_Finish = 0;
 uint32_t addr = 0x000000;
 uint8_t rxbuf [256] = {0};  
 uint8_t txbuf [256] = {0};  
 uint8_t data_TX [256] = {
-    27, 18, 128, 36, 33, 7, 7, 8, 9, 10,
+    1, 2, 8, 0, 1, 7, 7, 8, 9, 10,
     11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
     21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
     31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
@@ -59,6 +59,8 @@ void Flash_cmd(uint8_t cmd, uint8_t CS)
   delay(10);
   HAL_SPI_Transmit_DMA(&hspi2, &cmd, 1);
   while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY);
+  //FLASH_CS_HIGH(CS);
+
 }
 
 
@@ -143,20 +145,25 @@ void Flash_WaitBusy(uint8_t num_pin)
 
 
 void Memory_test(void){
-    Flash_Transmit(0 ,0, &data_TX[0]);
-    Flash_Receive(0 ,0, &rxbuf[0]);
+    Flash_Transmit(0, 2048, &data_TX[0]);
+    Flash_Receive( 0, 2048, &rxbuf[0]  );
 }
 
-/*
+
+uint32_t addr_flash = 0;
+uint32_t masa = 0;
+uint32_t mem_CS = 0;
+
 void Memory(uint8_t *data_TX){
   addr_flash = 0;
-  masa |= (0b11111 << 27);          // 5 ??? ?????? ?????????? ? 1
-  mem_CS = (masa >> 24) & 0b111;    // ??? 24,25,26 ??? CS
+  masa |= (0b11111 << 27);          
+  mem_CS = (masa >> 24) & 0b111;    
   addr_flash = masa & 0xFFFFFF;
   Flash_Transmit(mem_CS, addr_flash, &data_TX[0]);
   masa++;
+  DMA_TX_Finish++;
 }
-
+/*
 void Memory_test(void){
   if (addr_test < 0x7FFFFF){
     Flash_Receive(0, addr_test, &rxbuf_test[addr_test * 16]);

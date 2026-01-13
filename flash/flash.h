@@ -9,6 +9,7 @@ extern uint8_t txbuf [256];//
 extern uint8_t data_TX [256];
 extern void delay(uint32_t tik);
 void Flash_ChipErase(uint8_t num_pin);
+void Memory(uint8_t *data_TX);
 void Memory_test(void);
 void Flash_WaitBusy(uint8_t num_pin);
 void Flash_cmd(uint8_t cmd, uint8_t CS);
@@ -38,7 +39,3 @@ extern uint8_t cmd;
 #define CMD_READ_STATUS     0x05
 #define CMD_READ_ID         0x9F
 #define Block_Protection    0x98
-
-#define WRITE_TIMEOUT       1000    // 1 секунда 
-#define ERASE_TIMEOUT       5000    // 5 секунд 
-#define CHIP_ERASE_TIMEOUT  60000   // 60 секунд 
