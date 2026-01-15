@@ -80,8 +80,8 @@ static void MX_NVIC_Init(void);
     float ch1_voltage = 0;
     uint8_t adc_data_ready = 0;
     uint32_t SPI1_CR1 = 0;
-    int8_t ADC_data[256] = {0};
-    int8_t ADC_data2[256] = {0};
+    int16_t ADC_data16[256] = {0};
+    uint8_t ADC_data8[256] = {0};
     uint32_t cikl = 0;
     uint32_t fa = 0;
 
@@ -131,6 +131,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   ADS131E0_RESET();
+  flash_Init();
   memset(Code_ADC, 0, sizeof(Code_ADC));
   schet = 0;
   
@@ -149,30 +150,39 @@ int main(void)
   while (1)
   {
     SPI1_CR1 = SPI1 -> CR1;
-   
     if (experement == 1){
         ADC_START_ON
         experement = 0;
     }
+    
         if (experement == 2){
-        memset(ADC_data, 0, sizeof(ADC_data));
-        cikl = 0;
-        experement = 0;
-    }
-        if (experement == 3){
-           Memory_test();
-    }
-      
-        if (experement == 4){
         ADC_START_OFF
         experement = 0;
-        }
-     
+    }
+    //    if (experement == 2){
+     //   Flash_Transmit(0 ,0, &data_TX[0]);
+   //    experement = 0;
+  //  }
+  //  HAL_Delay(100);
+  //      if (experement == 3){
+ //         Flash_Receive(0 ,0, &rxbuf[0]);
+  //      experement = 0;
+  //  }
+            if (experement == 4){
+        Memory_test();
+        experement = 0;
+    }
     
     
+          if (cikl == 16){
+        Memory_Interleaved_Fast(&ADC_data8[0]);
+        //cikl++;
+          cikl = 0;
+      }
     
+
     
-    
+
     uartDataHandler();  // Обработка полученных данных
     /* USER CODE END WHILE */
 
@@ -295,7 +305,7 @@ static void MX_SPI2_Init(void)
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -476,8 +486,9 @@ static void MX_GPIO_Init(void)
   {
       if (hspi == &hspi2)      
       {
-          delay(5);
+        delay(10);
           FLASH_CS_HIGH(CS_num);
+          
       }
   }
 
@@ -485,6 +496,7 @@ static void MX_GPIO_Init(void)
   {
       if (hspi == &hspi2)      
       {
+        delay(10);
          FLASH_CS_HIGH(CS_num);
       }
   }
@@ -504,15 +516,23 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
       ModbusRegister[6] = (int16_t)(((uint16_t)ADC_rx_data[15] << 8) | ADC_rx_data[16]);  // CH7
       ModbusRegister[7] = (int16_t)(((uint16_t)ADC_rx_data[17] << 8) | ADC_rx_data[18]);  // CH8
       
-      if (cikl <= 16) {
-      memcpy(&ADC_data[cikl * 16],  &ADC_rx_data[3], 16);
-      cikl++;
+          
+      ADC_data16[0] = (int16_t)(((uint16_t)ADC_rx_data[3]  << 8) | ADC_rx_data[4]);   // CH1
+      ADC_data16[1] = (int16_t)(((uint16_t)ADC_rx_data[5]  << 8) | ADC_rx_data[6]);   // CH2
+      ADC_data16[2] = (int16_t)(((uint16_t)ADC_rx_data[7]  << 8) | ADC_rx_data[8]);   // CH3
+      ADC_data16[3] = (int16_t)(((uint16_t)ADC_rx_data[9]  << 8) | ADC_rx_data[10]);  // CH4
+      ADC_data16[4] = (int16_t)(((uint16_t)ADC_rx_data[11] << 8) | ADC_rx_data[12]);  // CH5
+      ADC_data16[5] = (int16_t)(((uint16_t)ADC_rx_data[13] << 8) | ADC_rx_data[14]);  // CH6
+      ADC_data16[6] = (int16_t)(((uint16_t)ADC_rx_data[15] << 8) | ADC_rx_data[16]);  // CH7
+      ADC_data16[7] = (int16_t)(((uint16_t)ADC_rx_data[17] << 8) | ADC_rx_data[18]);  // CH8
+
+   
+          
+      if (cikl < 16) {
+          memcpy(&ADC_data8[cikl * 16],  &ADC_rx_data[3], 16);
+          cikl++;
       }
-      if (cikl == 16){
-          memcpy(&ADC_data2[0], &ADC_data[0], 256);
-          Memory(&ADC_data2[0]);
-          cikl = 0;
-      }
+
 }
 
 

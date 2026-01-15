@@ -1,32 +1,5 @@
 <?xml version="1.0"?>
 <settings>
-    <StLinkDriver>
-        <stlinkserialNo>066BFF535455886687122214</stlinkserialNo>
-        <stlinkfoundProbes />
-        <LeaveTargetRunning>_ 0</LeaveTargetRunning>
-        <CStepIntDis>_ 0</CStepIntDis>
-        <stlinkResetStyle>0</stlinkResetStyle>
-        <stlinkResetStrategy>2</stlinkResetStrategy>
-    </StLinkDriver>
-    <PlDriver>
-        <FirstRun>0</FirstRun>
-        <MemConfigValue>C:\Program Files\IAR Systems\Embedded Workbench 9.2\arm\config\debugger\ST\STM32F207VE.ddf</MemConfigValue>
-    </PlDriver>
-    <DebugChecksum>
-        <Checksum>4266149520</Checksum>
-    </DebugChecksum>
-    <Exceptions>
-        <StopOnUncaught>_ 0</StopOnUncaught>
-        <StopOnThrow>_ 0</StopOnThrow>
-    </Exceptions>
-    <Disassembly>
-        <MixedMode>1</MixedMode>
-        <InstrCount>0</InstrCount>
-    </Disassembly>
-    <Trace1>
-        <Enabled>0</Enabled>
-        <ShowSource>1</ShowSource>
-    </Trace1>
     <TerminalIO>
         <InputSource>1</InputSource>
         <InputMode2>10</InputMode2>
@@ -36,6 +9,10 @@
         <InputEncodingICU>0</InputEncodingICU>
         <OutputEncodingICU>0</OutputEncodingICU>
     </TerminalIO>
+    <TermIOLog>
+        <LoggingEnabled>_ 0</LoggingEnabled>
+        <LogFile>_ ""</LogFile>
+    </TermIOLog>
     <Stack>
         <FillEnabled>0</FillEnabled>
         <OverflowWarningsEnabled>1</OverflowWarningsEnabled>
@@ -47,135 +24,21 @@
         <LimitSize>0</LimitSize>
         <ByteLimit>50</ByteLimit>
     </Stack>
-    <CallStack>
-        <ShowArgs>0</ShowArgs>
-    </CallStack>
-    <SWOTraceHWSettings>
-        <OverrideDefaultClocks>0</OverrideDefaultClocks>
-        <CpuClock>120000000</CpuClock>
-        <ClockAutoDetect>0</ClockAutoDetect>
-        <ClockWanted>2000000</ClockWanted>
-        <JtagSpeed>2000000</JtagSpeed>
-        <Prescaler>60</Prescaler>
-        <TimeStampPrescIndex>0</TimeStampPrescIndex>
-        <TimeStampPrescData>0</TimeStampPrescData>
-        <PcSampCYCTAP>1</PcSampCYCTAP>
-        <PcSampPOSTCNT>15</PcSampPOSTCNT>
-        <PcSampIndex>0</PcSampIndex>
-        <DataLogMode>0</DataLogMode>
-        <ITMportsEnable>0</ITMportsEnable>
-        <ITMportsTermIO>0</ITMportsTermIO>
-        <ITMportsLogFile>0</ITMportsLogFile>
-        <ITMlogFile>$PROJ_DIR$\ITM.log</ITMlogFile>
-    </SWOTraceHWSettings>
-    <ArmDriver>
-        <EnableCache>0</EnableCache>
-        <EnforceMemoryConfiguration>1</EnforceMemoryConfiguration>
-    </ArmDriver>
-    <array_types>
-        <Fmt0>char[205]	5	0</Fmt0>
-        <Fmt1>char[8]	3	0</Fmt1>
-        <Fmt2>int16_t[100]	3	0</Fmt2>
-        <Fmt3>int16_t[128]	3	0</Fmt3>
-        <Fmt4>int16_t[2200]	3	0</Fmt4>
-        <Fmt5>int16_t[256]	3	0</Fmt5>
-        <Fmt6>int16_t[8]	4	0</Fmt6>
-        <Fmt7>uint16_t[100]	3	0</Fmt7>
-        <Fmt8>uint16_t[256]	4	0</Fmt8>
-        <Fmt9>uint8_t[19]	4	0</Fmt9>
-        <Fmt10>uint8_t[256]	4	0</Fmt10>
-        <Fmt11>uint8_t[259]	3	0</Fmt11>
-        <Fmt12>uint8_t[260]	3	0</Fmt12>
-        <Fmt13>uint8_t[261]	3	0</Fmt13>
-        <Fmt14>uint8_t[27]	1	0</Fmt14>
-        <Fmt15>uint8_t[2]	1	0</Fmt15>
-        <Fmt16>uint8_t[3]	1	0</Fmt16>
-    </array_types>
-    <watch_formats>
-        <Fmt0>{W}42:CRCValue	4	0</Fmt0>
-        <Fmt1>{W}42:SPI1_CR1	5	0</Fmt1>
-        <Fmt2>{W}42:addr_flash	1	0</Fmt2>
-        <Fmt3>{W}42:addr_test	2	0</Fmt3>
-        <Fmt4>{W}42:crc	4	0</Fmt4>
-        <Fmt5>{W}42:experement	3	0</Fmt5>
-        <Fmt6>{W}42:fa	1	0</Fmt6>
-        <Fmt7>{W}42:masa	1	0</Fmt7>
-        <Fmt8>{W}42:mem_CS	1	0</Fmt8>
-        <Fmt9>{W}42:mem_addr	1	0</Fmt9>
-        <Fmt10>{W}42:rxCRC	4	0</Fmt10>
-        <Fmt11>{W}42:tempModbusRx[0]	4	0</Fmt11>
-    </watch_formats>
-    <Trace2>
-        <Enabled>0</Enabled>
-        <ShowSource>0</ShowSource>
-    </Trace2>
-    <SWOTraceWindow>
-        <PcSampling>0</PcSampling>
-        <InterruptLogs>0</InterruptLogs>
-        <ForcedTimeStamps>0</ForcedTimeStamps>
-        <EventCPI>0</EventCPI>
-        <EventEXC>0</EventEXC>
-        <EventFOLD>0</EventFOLD>
-        <EventLSU>0</EventLSU>
-        <EventSLEEP>0</EventSLEEP>
-    </SWOTraceWindow>
-    <DataLog>
-        <GraphEnabled>0</GraphEnabled>
-        <LogEnabled>0</LogEnabled>
-        <ShowTimeLog>1</ShowTimeLog>
-        <SumEnabled>0</SumEnabled>
-        <ShowTimeSum>1</ShowTimeSum>
-    </DataLog>
-    <InterruptLog>
-        <GraphEnabled>0</GraphEnabled>
-        <LogEnabled>0</LogEnabled>
-        <ShowTimeLog>1</ShowTimeLog>
-        <SumEnabled>0</SumEnabled>
-        <ShowTimeSum>1</ShowTimeSum>
-        <SumSortOrder>0</SumSortOrder>
-    </InterruptLog>
-    <EventLog>
-        <GraphEnabled>0</GraphEnabled>
-        <LogEnabled>0</LogEnabled>
-        <ShowTimeLog>1</ShowTimeLog>
-        <Title_0>Ch3</Title_0>
-        <Symbol_0>0 0 1</Symbol_0>
-        <Title_1>Ch2</Title_1>
-        <Symbol_1>0 0 1</Symbol_1>
-        <Title_2>Ch1</Title_2>
-        <Symbol_2>0 0 1</Symbol_2>
-        <Title_3>Ch0</Title_3>
-        <Symbol_3>0 0 1</Symbol_3>
-        <SumEnabled>0</SumEnabled>
-        <ShowTimeSum>1</ShowTimeSum>
-        <SumSortOrder>0</SumSortOrder>
-    </EventLog>
-    <TermIOLog>
-        <LoggingEnabled>_ 0</LoggingEnabled>
-        <LogFile>_ ""</LogFile>
-    </TermIOLog>
     <DisassembleMode>
         <mode>0</mode>
     </DisassembleMode>
     <Breakpoints2>
-        <Bp0>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Peripheral\Src\ADS131E08.c}.517.5" 0 0 1 "" 0 "" 0</Bp0>
-        <Bp1>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Peripheral\Src\ADS131E08.c}.522.5" 0 0 1 "" 0 "" 0</Bp1>
-        <Bp2>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Peripheral\Src\ADS131E08.c}.528.5" 0 0 1 "" 0 "" 0</Bp2>
-        <Bp3>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Peripheral\Src\ADS131E08.c}.530.5" 0 0 1 "" 0 "" 0</Bp3>
-        <Bp4>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Peripheral\Src\ADS131E08.c}.532.5" 0 0 1 "" 0 "" 0</Bp4>
-        <Bp5>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Peripheral\Src\ADS131E08.c}.541.5" 0 0 1 "" 0 "" 0</Bp5>
-        <Bp6>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Peripheral\Src\ADS131E08.c}.543.5" 0 0 1 "" 0 "" 0</Bp6>
-        <Count>7</Count>
+        <Count>0</Count>
     </Breakpoints2>
     <Aliases>
         <Count>0</Count>
         <SuppressDialog>0</SuppressDialog>
     </Aliases>
-    <DriverProfiling>
-        <Enabled>0</Enabled>
-        <Mode>3</Mode>
-        <Graph>0</Graph>
-        <Symbiont>0</Symbiont>
-        <Exclusions />
-    </DriverProfiling>
+    <PlDriver>
+        <MemConfigValue>C:\Program Files\IAR Systems\Embedded Workbench 9.2\arm\config\debugger\ST\STM32F207VE.ddf</MemConfigValue>
+    </PlDriver>
+    <ArmDriver>
+        <EnableCache>0</EnableCache>
+        <EnforceMemoryConfiguration>1</EnforceMemoryConfiguration>
+    </ArmDriver>
 </settings>
