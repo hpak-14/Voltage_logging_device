@@ -4,9 +4,10 @@
 #include "stm32f2xx_hal_dma.h"
 
 extern SPI_HandleTypeDef hspi2;
-extern uint8_t rxbuf [256];//
+extern uint8_t rxbuf [2560];//
 extern uint8_t txbuf [256];//
 extern uint8_t data_TX [256];
+extern uint8_t flag_mem;
 extern void delay(uint32_t tik);
 void Flash_ChipErase(uint8_t num_pin);
 void Memory(uint8_t *data_TX);
@@ -16,6 +17,8 @@ void Flash_cmd(uint8_t cmd, uint8_t CS);
 void Flash_Transmit(uint8_t num_pin, uint32_t addr, uint8_t *data_TX);
 void Flash_Receive(uint8_t num_pin, uint32_t addr, uint8_t *rxbuf);
 void Flash_SectorErase(uint8_t num_pin, uint32_t addr);
+void flash_Init(void);
+void Memory_Interleaved_Fast(uint8_t *data_TX);
 
 void FLASH_CS_LOW(uint8_t num);
 void FLASH_CS_HIGH(uint8_t num);
@@ -38,4 +41,6 @@ extern uint8_t cmd;
 #define CMD_WRITE_DISABLE   0x04
 #define CMD_READ_STATUS     0x05
 #define CMD_READ_ID         0x9F
-#define Block_Protection    0x98
+#define CMD_Block_Protection_Unlock    0x98 
+
+

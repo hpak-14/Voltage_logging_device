@@ -1,11 +1,12 @@
 #include <flash.h>
 
+uint8_t flag_mem = 0;
 uint8_t cmd = 0;
 uint8_t CS_num = 0;
 uint32_t DMA_TX_Finish = 0;
 uint8_t DMA_RX_Finish = 0;
 uint32_t addr = 0x000000;
-uint8_t rxbuf [256] = {0};  
+uint8_t rxbuf [2560] = {0};  
 uint8_t txbuf [256] = {0};  
 uint8_t data_TX [256] = {
     1, 2, 8, 0, 1, 7, 7, 8, 9, 10,
@@ -58,8 +59,8 @@ void Flash_cmd(uint8_t cmd, uint8_t CS)
   FLASH_CS_LOW(CS);
   delay(10);
   HAL_SPI_Transmit_DMA(&hspi2, &cmd, 1);
-  while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY);
-  //FLASH_CS_HIGH(CS);
+ // while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY);
+
 
 }
 
@@ -68,9 +69,7 @@ void Flash_Transmit(uint8_t num_pin, uint32_t addr, uint8_t *data_TX)
 {
   uint8_t txbuf [1 + 3 + 256] = {0};
   CS_num = num_pin;
-  Flash_cmd(0x06, num_pin);
-  delay(10);
-  Flash_cmd(0x98, num_pin);
+  Flash_cmd(CMD_WRITE_ENABLE, num_pin);
   delay(10);
   Flash_cmd(CMD_WRITE_ENABLE, num_pin );  
   txbuf[0] = CMD_PAGE_PROGRAM;
@@ -81,8 +80,7 @@ void Flash_Transmit(uint8_t num_pin, uint32_t addr, uint8_t *data_TX)
   FLASH_CS_LOW(num_pin);
   delay(10);
   HAL_SPI_Transmit_DMA(&hspi2, txbuf, 260);
-  while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY);
-  Flash_WaitBusy(num_pin);
+  //Flash_WaitBusy(num_pin);
 }
 
 
@@ -100,7 +98,6 @@ void Flash_Receive(uint8_t num_pin, uint32_t addr, uint8_t *rxbuf){
   delay(10);
   HAL_SPI_Transmit(&hspi2, tx_buffer, 4, 1000);
   HAL_SPI_Receive_DMA(&hspi2, rxbuf, 256);
-  while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY);
 }
 
 
@@ -117,17 +114,14 @@ void Flash_SectorErase(uint8_t num_pin, uint32_t addr)
   
   FLASH_CS_LOW(num_pin);
   delay(10);
-  HAL_SPI_Transmit(&hspi2, tx_buffer, 4, 100);
-  delay(10);
-  FLASH_CS_HIGH(num_pin);
-  
+  HAL_SPI_Transmit_DMA(&hspi2, tx_buffer, 4);
 }
  
 void Flash_ChipErase(uint8_t num_pin){
   Flash_cmd(CMD_WRITE_ENABLE, num_pin);
   delay(10);
   Flash_cmd(CMD_CHIP_ERASE, num_pin);
-  Flash_WaitBusy(num_pin);
+  //Flash_WaitBusy(num_pin);
 }
 
 
@@ -144,12 +138,6 @@ void Flash_WaitBusy(uint8_t num_pin)
 }
 
 
-void Memory_test(void){
-    Flash_Transmit(0, 2048, &data_TX[0]);
-    Flash_Receive( 0, 2048, &rxbuf[0]  );
-}
-
-
 uint32_t addr_flash = 0;
 uint32_t masa = 0;
 uint32_t mem_CS = 0;
@@ -161,14 +149,88 @@ void Memory(uint8_t *data_TX){
   addr_flash = masa & 0xFFFFFF;
   Flash_Transmit(mem_CS, addr_flash, &data_TX[0]);
   masa++;
-  DMA_TX_Finish++;
 }
+
 /*
-void Memory_test(void){
-  if (addr_test < 0x7FFFFF){
-    Flash_Receive(0, addr_test, &rxbuf_test[addr_test * 16]);
-    addr_test ++;
-  }
-  
+void Memory(uint8_t *data_TX){
+  addr_flash = 0;
+  masa |= (0b11111 << 27);          
+  mem_CS = (masa >> 24) & 0b111;    
+  addr_flash = masa & 0xFFFFFF;
+  Flash_Transmit(mem_CS, addr_flash, &data_TX[0]);
+  masa++;
 }
 */
+
+void Memory_test(void){
+  
+   uint8_t tx_buffer[4] = {
+    CMD_READ,           
+    (0 >> 16) & 0xFF,
+    (0 >> 8) & 0xFF, 
+    0 & 0xFF
+  };
+  
+  FLASH_CS_LOW(0);
+  delay(10);
+  HAL_SPI_Transmit(&hspi2, tx_buffer, 4, 1000);
+  HAL_SPI_Receive_DMA(&hspi2, &rxbuf[0], 2560);
+  while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY);
+}
+
+void flash_Init(void){
+  
+    for (uint8_t CS = 0; CS < 8; CS++) {
+
+        Flash_cmd(CMD_WRITE_ENABLE, CS);
+        delay(10);
+
+        Flash_cmd(CMD_Block_Protection_Unlock, CS);
+        delay(10);
+        
+        Flash_ChipErase(CS);
+        delay(10);
+    }
+
+}
+
+#define CHIP_SIZE  (8 * 1024 * 1024)  // 8 МБ на чип
+#define PAGE_SIZE 256
+#define SECTOR_SIZE 4096
+#define CHIPS_COUNT 8
+
+uint8_t current_chip = 0;                      // Текущий активный чип
+uint32_t chip_addresses[8] = {0};              // Текущие адреса для каждого чипа
+uint32_t sector_counters[8] = {0};             // Счётчики записанных байт в текущем секторе
+
+void Memory_Interleaved_Fast(uint8_t *data_TX) {
+  
+    static uint8_t fast_cycle = 0;
+    static uint32_t last_write_time[8] = {0};
+    uint8_t target_chip = current_chip;
+    
+    //if (chip_addresses[target_chip] >= CHIP_SIZE) {
+    //current_chip = (current_chip + 1) % CHIPS_COUNT;
+    //return;
+    //}
+    if (chip_addresses[target_chip] >= CHIP_SIZE) {
+    chip_addresses[target_chip] = 0;  // начинаем с начала
+    }
+
+    Flash_Transmit(target_chip, chip_addresses[target_chip], &data_TX[0]);
+    
+    // Обновляем состояние
+    chip_addresses[target_chip] += PAGE_SIZE;
+    sector_counters[target_chip] += PAGE_SIZE;
+    
+    // Если сектор заполнен
+    if (sector_counters[target_chip] >= SECTOR_SIZE) {
+        sector_counters[target_chip] = 0;
+        // Стираем следующий сектор в фоне
+        uint32_t next_sector = chip_addresses[target_chip] & 0xFFFFF000;
+        Flash_SectorErase(target_chip, next_sector);
+    }
+    
+    // Переходим к следующему чипу
+    current_chip = (target_chip + 1) % CHIPS_COUNT;
+}

@@ -3,17 +3,17 @@
     <StLinkDriver>
         <stlinkserialNo>066BFF535455886687122214</stlinkserialNo>
         <stlinkfoundProbes />
-        <LeaveTargetRunning>_ 0</LeaveTargetRunning>
-        <CStepIntDis>_ 0</CStepIntDis>
         <stlinkResetStyle>0</stlinkResetStyle>
         <stlinkResetStrategy>2</stlinkResetStrategy>
+        <LeaveTargetRunning>_ 0</LeaveTargetRunning>
+        <CStepIntDis>_ 0</CStepIntDis>
     </StLinkDriver>
     <PlDriver>
         <FirstRun>0</FirstRun>
         <MemConfigValue>C:\Program Files\IAR Systems\Embedded Workbench 9.2\arm\config\debugger\ST\STM32F207VE.ddf</MemConfigValue>
     </PlDriver>
     <DebugChecksum>
-        <Checksum>3033925358</Checksum>
+        <Checksum>1543456462</Checksum>
     </DebugChecksum>
     <Exceptions>
         <StopOnUncaught>_ 0</StopOnUncaught>
@@ -82,14 +82,16 @@
         <Fmt6>int16_t[8]	4	0</Fmt6>
         <Fmt7>uint16_t[100]	3	0</Fmt7>
         <Fmt8>uint16_t[256]	4	0</Fmt8>
-        <Fmt9>uint8_t[19]	4	0</Fmt9>
-        <Fmt10>uint8_t[256]	3	0</Fmt10>
-        <Fmt11>uint8_t[259]	3	0</Fmt11>
-        <Fmt12>uint8_t[260]	3	0</Fmt12>
-        <Fmt13>uint8_t[261]	3	0</Fmt13>
-        <Fmt14>uint8_t[27]	1	0</Fmt14>
-        <Fmt15>uint8_t[2]	1	0</Fmt15>
-        <Fmt16>uint8_t[3]	1	0</Fmt16>
+        <Fmt9>uint32_t[8]	1	0</Fmt9>
+        <Fmt10>uint8_t[19]	4	0</Fmt10>
+        <Fmt11>uint8_t[2560]	3	0</Fmt11>
+        <Fmt12>uint8_t[256]	3	0</Fmt12>
+        <Fmt13>uint8_t[259]	3	0</Fmt13>
+        <Fmt14>uint8_t[260]	3	0</Fmt14>
+        <Fmt15>uint8_t[261]	3	0</Fmt15>
+        <Fmt16>uint8_t[27]	1	0</Fmt16>
+        <Fmt17>uint8_t[2]	1	0</Fmt17>
+        <Fmt18>uint8_t[3]	1	0</Fmt18>
     </array_types>
     <watch_formats>
         <Fmt0>{W}42:CRCValue	4	0</Fmt0>
@@ -150,6 +152,13 @@
         <ShowTimeSum>1</ShowTimeSum>
         <SumSortOrder>0</SumSortOrder>
     </EventLog>
+    <DriverProfiling>
+        <Enabled>0</Enabled>
+        <Mode>3</Mode>
+        <Graph>0</Graph>
+        <Symbiont>0</Symbiont>
+        <Exclusions />
+    </DriverProfiling>
     <TermIOLog>
         <LoggingEnabled>_ 0</LoggingEnabled>
         <LogFile>_ ""</LogFile>
@@ -166,18 +175,11 @@
         <Bp5>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Peripheral\Src\ADS131E08.c}.541.5" 0 0 1 "" 0 "" 0</Bp5>
         <Bp6>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Peripheral\Src\ADS131E08.c}.543.5" 0 0 1 "" 0 "" 0</Bp6>
         <Bp7>_ 0 "EMUL_CODE" "0x2" 0 0 1 "" 0 "" 0</Bp7>
-        <Bp8>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Core\Src\main.c}.166.9" 0 0 1 "" 0 "" 0</Bp8>
+        <Bp8>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Core\Src\main.c}.207.3" 0 0 1 "" 0 "" 0</Bp8>
         <Count>9</Count>
     </Breakpoints2>
     <Aliases>
         <Count>0</Count>
         <SuppressDialog>0</SuppressDialog>
     </Aliases>
-    <DriverProfiling>
-        <Enabled>0</Enabled>
-        <Mode>3</Mode>
-        <Graph>0</Graph>
-        <Symbiont>0</Symbiont>
-        <Exclusions />
-    </DriverProfiling>
 </settings>

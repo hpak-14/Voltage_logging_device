@@ -130,7 +130,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   ADS131E0_RESET();
-  Flash_ChipErase(0);
+  flash_Init();
   memset(Code_ADC, 0, sizeof(Code_ADC));
   schet = 0;
   
@@ -153,6 +153,11 @@ int main(void)
         ADC_START_ON
         experement = 0;
     }
+    
+        if (experement == 2){
+        ADC_START_OFF
+        experement = 0;
+    }
     //    if (experement == 2){
      //   Flash_Transmit(0 ,0, &data_TX[0]);
    //    experement = 0;
@@ -168,7 +173,11 @@ int main(void)
     }
     
     
-    
+          if (cikl == 16){
+        Memory_Interleaved_Fast(&ADC_data8[0]);
+        //cikl++;
+          cikl = 0;
+      }
     
 
     
@@ -522,10 +531,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
           memcpy(&ADC_data8[cikl * 16],  &ADC_rx_data[3], 16);
           cikl++;
       }
-      if (cikl == 16){
-        Memory(&ADC_data8[0]);
-          cikl = 0;
-      }
+
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
