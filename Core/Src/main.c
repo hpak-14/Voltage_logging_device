@@ -18,6 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
+#include "lwip.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -42,8 +44,6 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-ETH_HandleTypeDef heth;
-
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
 DMA_HandleTypeDef hdma_spi1_rx;
@@ -53,6 +53,41 @@ DMA_HandleTypeDef hdma_spi2_tx;
 
 UART_HandleTypeDef huart4;
 
+/* Definitions for ADC_data */
+osThreadId_t ADC_dataHandle;
+const osThreadAttr_t ADC_data_attributes = {
+  .name = "ADC_data",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for modbus */
+osThreadId_t modbusHandle;
+const osThreadAttr_t modbus_attributes = {
+  .name = "modbus",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
+/* Definitions for ethernet */
+osThreadId_t ethernetHandle;
+const osThreadAttr_t ethernet_attributes = {
+  .name = "ethernet",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
+/* Definitions for Flash */
+osThreadId_t FlashHandle;
+const osThreadAttr_t Flash_attributes = {
+  .name = "Flash",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
+/* Definitions for Diod */
+osThreadId_t DiodHandle;
+const osThreadAttr_t Diod_attributes = {
+  .name = "Diod",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -64,7 +99,12 @@ static void MX_DMA_Init(void);
 static void MX_UART4_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_SPI1_Init(void);
-static void MX_ETH_Init(void);
+void Task_ADC_Data(void *argument);
+void Task_ModBus(void *argument);
+void Task_Ethernet(void *argument);
+void Task_Flash_data(void *argument);
+void Task_Diod(void *argument);
+
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -128,7 +168,6 @@ int main(void)
   MX_UART4_Init();
   MX_SPI2_Init();
   MX_SPI1_Init();
-  MX_ETH_Init();
 
   /* Initialize interrupts */
   MX_NVIC_Init();
@@ -148,6 +187,54 @@ int main(void)
 
      
   /* USER CODE END 2 */
+
+  /* Init scheduler */
+  osKernelInitialize();
+
+  /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
+  /* Create the thread(s) */
+  /* creation of ADC_data */
+  ADC_dataHandle = osThreadNew(Task_ADC_Data, NULL, &ADC_data_attributes);
+
+  /* creation of modbus */
+  modbusHandle = osThreadNew(Task_ModBus, NULL, &modbus_attributes);
+
+  /* creation of ethernet */
+  ethernetHandle = osThreadNew(Task_Ethernet, NULL, &ethernet_attributes);
+
+  /* creation of Flash */
+  FlashHandle = osThreadNew(Task_Flash_data, NULL, &Flash_attributes);
+
+  /* creation of Diod */
+  DiodHandle = osThreadNew(Task_Diod, NULL, &Diod_attributes);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+  /* add events, ... */
+  /* USER CODE END RTOS_EVENTS */
+
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -244,55 +331,8 @@ void SystemClock_Config(void)
 static void MX_NVIC_Init(void)
 {
   /* EXTI2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
-}
-
-/**
-  * @brief ETH Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_ETH_Init(void)
-{
-
-  /* USER CODE BEGIN ETH_Init 0 */
-
-  /* USER CODE END ETH_Init 0 */
-
-   static uint8_t MACAddr[6];
-
-  /* USER CODE BEGIN ETH_Init 1 */
-
-  /* USER CODE END ETH_Init 1 */
-  heth.Instance = ETH;
-  heth.Init.AutoNegotiation = ETH_AUTONEGOTIATION_ENABLE;
-  heth.Init.Speed = ETH_SPEED_100M;
-  heth.Init.DuplexMode = ETH_MODE_FULLDUPLEX;
-  heth.Init.PhyAddress = LAN8742A_PHY_ADDRESS;
-  MACAddr[0] = 0x00;
-  MACAddr[1] = 0x80;
-  MACAddr[2] = 0xE1;
-  MACAddr[3] = 0x00;
-  MACAddr[4] = 0x00;
-  MACAddr[5] = 0x00;
-  heth.Init.MACAddr = &MACAddr[0];
-  heth.Init.RxMode = ETH_RXPOLLING_MODE;
-  heth.Init.ChecksumMode = ETH_CHECKSUM_BY_HARDWARE;
-  heth.Init.MediaInterface = ETH_MEDIA_INTERFACE_RMII;
-
-  /* USER CODE BEGIN MACADDRESS */
-
-  /* USER CODE END MACADDRESS */
-
-  if (HAL_ETH_Init(&heth) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN ETH_Init 2 */
-
-  /* USER CODE END ETH_Init 2 */
-
 }
 
 /**
@@ -416,16 +456,16 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA1_Stream3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream3_IRQn);
   /* DMA1_Stream4_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);
   /* DMA2_Stream0_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
   /* DMA2_Stream3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
 
 }
@@ -605,12 +645,106 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
  delay(5);
  ADS131E0_DataRead();
- fa++;
 }
 
 
 // ��� ���)
 /* USER CODE END 4 */
+
+/* USER CODE BEGIN Header_Task_ADC_Data */
+/**
+  * @brief  Function implementing the ADC_data thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_Task_ADC_Data */
+void Task_ADC_Data(void *argument)
+{
+  /* init code for LWIP */
+  MX_LWIP_Init();
+  /* USER CODE BEGIN 5 */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_Task_ModBus */
+/**
+* @brief Function implementing the modbus thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Task_ModBus */
+void Task_ModBus(void *argument)
+{
+  /* USER CODE BEGIN Task_ModBus */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END Task_ModBus */
+}
+
+/* USER CODE BEGIN Header_Task_Ethernet */
+/**
+* @brief Function implementing the ethernet thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Task_Ethernet */
+void Task_Ethernet(void *argument)
+{
+  /* USER CODE BEGIN Task_Ethernet */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END Task_Ethernet */
+}
+
+/* USER CODE BEGIN Header_Task_Flash_data */
+/**
+* @brief Function implementing the Flash thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Task_Flash_data */
+void Task_Flash_data(void *argument)
+{
+  /* USER CODE BEGIN Task_Flash_data */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END Task_Flash_data */
+}
+
+/* USER CODE BEGIN Header_Task_Diod */
+/**
+* @brief Function implementing the Diod thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Task_Diod */
+void Task_Diod(void *argument)
+{
+  /* USER CODE BEGIN Task_Diod */
+  /* Infinite loop */
+  for(;;)
+  {
+    HAL_Delay(500);
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
+    
+    osDelay(1);
+  }
+  /* USER CODE END Task_Diod */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
