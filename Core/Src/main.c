@@ -23,6 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <math.h>
 #include "ADC.h"
 #include "ModbusRTU_Slave.h"
 #include "flash.h"
@@ -91,6 +92,13 @@ const osThreadAttr_t Diod_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
+/* Definitions for RMS */
+osThreadId_t RMSHandle;
+const osThreadAttr_t RMS_attributes = {
+  .name = "RMS",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -108,6 +116,7 @@ void Task_ModBus(void *argument);
 void Task_Ethernet(void *argument);
 void Task_Flash_data(void *argument);
 void Task_Diod(void *argument);
+void Task_RMS(void *argument);
 
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
@@ -120,6 +129,7 @@ static void MX_NVIC_Init(void);
 
     int16_t ADC_data16[32000] = {0};
     uint8_t ADC_data8[256] = {0};
+    uint16_t ADC_16[8] = {0};
     
     extern uint8_t ADC_rx_data[19];
 
@@ -130,7 +140,10 @@ static void MX_NVIC_Init(void);
     uint16_t RMS_N = 0;
     uint64_t RMS_u = 0;
     float    RMS_U = 0;
+    float    RMS_fin = 0;
     uint8_t  RMS_flag = 0;
+    uint8_t  RMS_flag1 = 0;
+
 
 // ��� ���)
 /* USER CODE END 0 */
@@ -222,6 +235,9 @@ int main(void)
   /* creation of Diod */
   DiodHandle = osThreadNew(Task_Diod, NULL, &Diod_attributes);
 
+  /* creation of RMS */
+  RMSHandle = osThreadNew(Task_RMS, NULL, &RMS_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -239,40 +255,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    SPI1_CR1 = SPI1 -> CR1;
-    if (experement == 1){
-        ADC_START_ON
-        experement = 0;
-    }
-    
-        if (experement == 2){
-        ADC_START_OFF
-        experement = 0;
-    }
-    //    if (experement == 2){
-     //   Flash_Transmit(0 ,0, &data_TX[0]);
-   //    experement = 0;
-  //  }
-  //  HAL_Delay(100);
-  //      if (experement == 3){
- //         Flash_Receive(0 ,0, &rxbuf[0]);
-  //      experement = 0;
-  //  }
-            if (experement == 4){
-        Memory_test();
-        experement = 0;
-    }
-    
-    
-          if (cikl == 16){
-        Memory_Interleaved_Fast(&ADC_data8[0]);
-          cikl = 0;
-      }
-    
-
-    
-
-    uartDataHandler();  // Обработка полученных данных
+  //  SPI1_CR1 = SPI1 -> CR1;
+  //         if (cikl == 16){
+  //      Memory_Interleaved_Fast(&ADC_data8[0]);
+  //        cikl = 0;
+  //   }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -644,7 +631,6 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
       ModbusRegister[6] = (int16_t)(((uint16_t)ADC_rx_data[15] << 8) | ADC_rx_data[16]);  // CH7
       ModbusRegister[7] = (int16_t)(((uint16_t)ADC_rx_data[17] << 8) | ADC_rx_data[18]);  // CH8
       
-      uint16_t ADC_16[8] = {0};
       ADC_16[0] = (int16_t)(((uint16_t)ADC_rx_data[3]  << 8) | ADC_rx_data[4]);   // CH1
       ADC_16[1] = (int16_t)(((uint16_t)ADC_rx_data[5]  << 8) | ADC_rx_data[6]);   // CH2
       ADC_16[2] = (int16_t)(((uint16_t)ADC_rx_data[7]  << 8) | ADC_rx_data[8]);   // CH3
@@ -671,7 +657,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
         RMS_U = RMS_u;
         RMS_u = 0;
         RMS_N = 0;
-        RMS_flag = 0;
+        RMS_flag = 1;
       }
   }
 }
@@ -729,7 +715,7 @@ void Task_ADC_Data(void *argument)
         experement = 0;
         break;
     }
-    if(RMS_flag = 0){
+    if(RMS_flag == 0){
       //  Memory_Interleaved_Fast(&ADC_data8[0]);
         flag_ADC_Data = 0;
     }
@@ -756,6 +742,7 @@ void Task_ModBus(void *argument)
   /* Infinite loop */
   for(;;)
   {
+    uartDataHandler();  // Обработка полученных данных
     osDelay(1);
   }
   /* USER CODE END Task_ModBus */
@@ -816,6 +803,33 @@ void Task_Diod(void *argument)
     osDelay(1);
   }
   /* USER CODE END Task_Diod */
+}
+
+/* USER CODE BEGIN Header_Task_RMS */
+/**
+* @brief Function implementing the RMS thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Task_RMS */
+void Task_RMS(void *argument)
+{
+  /* USER CODE BEGIN Task_RMS */
+  /* Infinite loop */
+  for(;;)
+  {
+    if(RMS_flag){
+    RMS_fin = (sqrt(RMS_U/3200) / 32767.0f * 4.096f * 1.1f);
+    ModbusRegister[8] = RMS_fin;
+    RMS_flag = 0;
+    if(RMS_fin == 0){
+      ADC_START_OFF
+    }
+
+  }
+  osDelay(1);
+  }
+  /* USER CODE END Task_RMS */
 }
 
 /**
