@@ -6,6 +6,8 @@
 
 
 extern SPI_HandleTypeDef hspi1;
+extern uint8_t flag_ADC;
+extern uint8_t flag_ADC_Data;
 
 #define ADC_CS_HIGH            HAL_GPIO_WritePin(GPIOE, GPIO_PIN_6, GPIO_PIN_SET);
 #define ADC_CS_LOW             HAL_GPIO_WritePin(GPIOE, GPIO_PIN_6, GPIO_PIN_RESET);

@@ -4,7 +4,7 @@
 #include "stm32f2xx_hal_dma.h"
 
 extern SPI_HandleTypeDef hspi2;
-extern uint8_t rxbuf [2560];//
+extern uint8_t rxbuf [256];//
 extern uint8_t txbuf [256];//
 extern uint8_t data_TX [256];
 extern uint8_t flag_mem;

@@ -6,7 +6,7 @@ uint8_t CS_num = 0;
 uint32_t DMA_TX_Finish = 0;
 uint8_t DMA_RX_Finish = 0;
 uint32_t addr = 0x000000;
-uint8_t rxbuf [2560] = {0};  
+uint8_t rxbuf [256] = {0};  
 uint8_t txbuf [256] = {0};  
 uint8_t data_TX [256] = {
     1, 2, 8, 0, 1, 7, 7, 8, 9, 10,

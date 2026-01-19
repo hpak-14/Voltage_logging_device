@@ -7,6 +7,8 @@
   uint8_t ADC_reset[19];
   uint8_t Noliki[19] = {0};
   uint8_t Code_ADC[256] = {0};
+  uint8_t flag_ADC = 0;
+  uint8_t flag_ADC_Data = 0;
   
 
   

@@ -123,7 +123,7 @@ static void MX_NVIC_Init(void);
     float ch1_voltage = 0;
     uint8_t adc_data_ready = 0;
     uint32_t SPI1_CR1 = 0;
-    int16_t ADC_data16[256] = {0};
+    int16_t ADC_data16[32000] = {0};
     uint8_t ADC_data8[256] = {0};
     uint32_t cikl = 0;
     uint32_t fa = 0;
@@ -267,7 +267,6 @@ int main(void)
     
           if (cikl == 16){
         Memory_Interleaved_Fast(&ADC_data8[0]);
-        //cikl++;
           cikl = 0;
       }
     
@@ -595,6 +594,7 @@ static void MX_GPIO_Init(void)
 
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
+  if(flag_ADC){
       delay(5);
       ADC_CS_HIGH;
      
@@ -607,22 +607,28 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
       ModbusRegister[6] = (int16_t)(((uint16_t)ADC_rx_data[15] << 8) | ADC_rx_data[16]);  // CH7
       ModbusRegister[7] = (int16_t)(((uint16_t)ADC_rx_data[17] << 8) | ADC_rx_data[18]);  // CH8
       
-          
-      ADC_data16[0] = (int16_t)(((uint16_t)ADC_rx_data[3]  << 8) | ADC_rx_data[4]);   // CH1
-      ADC_data16[1] = (int16_t)(((uint16_t)ADC_rx_data[5]  << 8) | ADC_rx_data[6]);   // CH2
-      ADC_data16[2] = (int16_t)(((uint16_t)ADC_rx_data[7]  << 8) | ADC_rx_data[8]);   // CH3
-      ADC_data16[3] = (int16_t)(((uint16_t)ADC_rx_data[9]  << 8) | ADC_rx_data[10]);  // CH4
-      ADC_data16[4] = (int16_t)(((uint16_t)ADC_rx_data[11] << 8) | ADC_rx_data[12]);  // CH5
-      ADC_data16[5] = (int16_t)(((uint16_t)ADC_rx_data[13] << 8) | ADC_rx_data[14]);  // CH6
-      ADC_data16[6] = (int16_t)(((uint16_t)ADC_rx_data[15] << 8) | ADC_rx_data[16]);  // CH7
-      ADC_data16[7] = (int16_t)(((uint16_t)ADC_rx_data[17] << 8) | ADC_rx_data[18]);  // CH8
+      uint16_t ADC_16[8] = {0};
+      ADC_16[0] = (int16_t)(((uint16_t)ADC_rx_data[3]  << 8) | ADC_rx_data[4]);   // CH1
+      ADC_16[1] = (int16_t)(((uint16_t)ADC_rx_data[5]  << 8) | ADC_rx_data[6]);   // CH2
+      ADC_16[2] = (int16_t)(((uint16_t)ADC_rx_data[7]  << 8) | ADC_rx_data[8]);   // CH3
+      ADC_16[3] = (int16_t)(((uint16_t)ADC_rx_data[9]  << 8) | ADC_rx_data[10]);  // CH4
+      ADC_16[4] = (int16_t)(((uint16_t)ADC_rx_data[11] << 8) | ADC_rx_data[12]);  // CH5
+      ADC_16[5] = (int16_t)(((uint16_t)ADC_rx_data[13] << 8) | ADC_rx_data[14]);  // CH6
+      ADC_16[6] = (int16_t)(((uint16_t)ADC_rx_data[15] << 8) | ADC_rx_data[16]);  // CH7
+      ADC_16[7] = (int16_t)(((uint16_t)ADC_rx_data[17] << 8) | ADC_rx_data[18]);  // CH8
 
    
           
-      if (cikl < 16) {
-          memcpy(&ADC_data8[cikl * 16],  &ADC_rx_data[3], 16);
+      if (cikl < 2000) {
+          //memcpy(&ADC_data8[cikl * 16],  &ADC_rx_data[3], 16);
+          memcpy(&ADC_data16[cikl * 16],  &ADC_16[0], 16);
           cikl++;
       }
+      if (cikl == 2000){
+          flag_ADC_Data = 1;
+          cikl = 0;
+      }
+  }
 
 }
 
@@ -666,7 +672,28 @@ void Task_ADC_Data(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+    switch (experement){
+    case 1:
+        ADC_START_ON
+        flag_ADC = 1;
+        experement = 0;
+        break;
+    
+    case 2:
+        ADC_START_OFF
+        flag_ADC = 0;
+        experement = 0;
+        break;
+    }
+    if(flag_ADC_Data){
+      //  Memory_Interleaved_Fast(&ADC_data8[0]);
+        flag_ADC_Data = 0;
+    }
+       
+  //  default:
+      //  vTaskSuspend(NULL);
+
+    
   }
   /* USER CODE END 5 */
 }
