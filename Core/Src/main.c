@@ -31,6 +31,7 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -50,6 +51,8 @@ DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_spi2_rx;
 DMA_HandleTypeDef hdma_spi2_tx;
+
+TIM_HandleTypeDef htim6;
 
 UART_HandleTypeDef huart4;
 
@@ -99,6 +102,7 @@ static void MX_DMA_Init(void);
 static void MX_UART4_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_TIM6_Init(void);
 void Task_ADC_Data(void *argument);
 void Task_ModBus(void *argument);
 void Task_Ethernet(void *argument);
@@ -114,24 +118,20 @@ static void MX_NVIC_Init(void);
 /* USER CODE BEGIN 0 */
 // ��� ���(
 
-    extern uint8_t Code_ADC[256];
-    extern uint8_t ADC_rx_data[19];
-  
-    uint32_t schet = 0;
-    uint8_t experement = 0;
-    uint8_t chip = 0;
-    float ch1_voltage = 0;
-    uint8_t adc_data_ready = 0;
-    uint32_t SPI1_CR1 = 0;
     int16_t ADC_data16[32000] = {0};
     uint8_t ADC_data8[256] = {0};
+    
+    extern uint8_t ADC_rx_data[19];
+
+    uint8_t experement = 0;
+    uint32_t SPI1_CR1 = 0;
     uint32_t cikl = 0;
-    uint32_t fa = 0;
-
     
+    uint16_t RMS_N = 0;
+    uint64_t RMS_u = 0;
+    float    RMS_U = 0;
+    uint8_t  RMS_flag = 0;
 
-
-    
 // ��� ���)
 /* USER CODE END 0 */
 
@@ -168,6 +168,7 @@ int main(void)
   MX_UART4_Init();
   MX_SPI2_Init();
   MX_SPI1_Init();
+  MX_TIM6_Init();
 
   /* Initialize interrupts */
   MX_NVIC_Init();
@@ -175,8 +176,6 @@ int main(void)
 
   ADS131E0_RESET();
   flash_Init();
-  memset(Code_ADC, 0, sizeof(Code_ADC));
-  schet = 0;
   
   // Инициализация Modbus
     DataCounter = 0;
@@ -330,7 +329,7 @@ void SystemClock_Config(void)
 static void MX_NVIC_Init(void)
 {
   /* EXTI2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(EXTI2_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 10, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
 }
 
@@ -411,6 +410,44 @@ static void MX_SPI2_Init(void)
 }
 
 /**
+  * @brief TIM6 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM6_Init(void)
+{
+
+  /* USER CODE BEGIN TIM6_Init 0 */
+
+  /* USER CODE END TIM6_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM6_Init 1 */
+
+  /* USER CODE END TIM6_Init 1 */
+  htim6.Instance = TIM6;
+  htim6.Init.Prescaler = 0;
+  htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim6.Init.Period = 65535;
+  htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM6_Init 2 */
+
+  /* USER CODE END TIM6_Init 2 */
+
+}
+
+/**
   * @brief UART4 Initialization Function
   * @param None
   * @retval None
@@ -455,10 +492,10 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA1_Stream3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 10, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream3_IRQn);
   /* DMA1_Stream4_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 10, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);
   /* DMA2_Stream0_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 5, 0);
@@ -597,7 +634,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
   if(flag_ADC){
       delay(5);
       ADC_CS_HIGH;
-     
+      
       ModbusRegister[0] = (int16_t)(((uint16_t)ADC_rx_data[3]  << 8) | ADC_rx_data[4]);   // CH1
       ModbusRegister[1] = (int16_t)(((uint16_t)ADC_rx_data[5]  << 8) | ADC_rx_data[6]);   // CH2
       ModbusRegister[2] = (int16_t)(((uint16_t)ADC_rx_data[7]  << 8) | ADC_rx_data[8]);   // CH3
@@ -617,8 +654,6 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
       ADC_16[6] = (int16_t)(((uint16_t)ADC_rx_data[15] << 8) | ADC_rx_data[16]);  // CH7
       ADC_16[7] = (int16_t)(((uint16_t)ADC_rx_data[17] << 8) | ADC_rx_data[18]);  // CH8
 
-   
-          
       if (cikl < 2000) {
           //memcpy(&ADC_data8[cikl * 16],  &ADC_rx_data[3], 16);
           memcpy(&ADC_data16[cikl * 16],  &ADC_16[0], 16);
@@ -628,8 +663,17 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
           flag_ADC_Data = 1;
           cikl = 0;
       }
+      
+      // RMS
+      int32_t u2 = ADC_16[0] * ADC_16[0];
+      RMS_u += u2;
+      if(++RMS_N >= 3200){ // 1 tic in 100ms
+        RMS_U = RMS_u;
+        RMS_u = 0;
+        RMS_N = 0;
+        RMS_flag = 0;
+      }
   }
-
 }
 
 
@@ -685,10 +729,11 @@ void Task_ADC_Data(void *argument)
         experement = 0;
         break;
     }
-    if(flag_ADC_Data){
+    if(RMS_flag = 0){
       //  Memory_Interleaved_Fast(&ADC_data8[0]);
         flag_ADC_Data = 0;
     }
+    osDelay(1);
        
   //  default:
       //  vTaskSuspend(NULL);
