@@ -129,7 +129,7 @@ static void MX_NVIC_Init(void);
 
     int16_t ADC_data16[32000] = {0};
     uint8_t ADC_data8[256] = {0};
-    uint16_t ADC_16[8] = {0};
+    int16_t ADC_16[8] = {0};
     
     extern uint8_t ADC_rx_data[19];
 
