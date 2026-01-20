@@ -137,10 +137,15 @@ static void MX_NVIC_Init(void);
     uint32_t SPI1_CR1 = 0;
     uint32_t cikl = 0;
     
-    uint16_t RMS_N = 0;
-    uint64_t RMS_u = 0;
+    uint32_t RMS_N = 0;
+    
+    int64_t RMS_u = 0;
+    int64_t DC_u = 0;
+    
+    float    DC_U = 0;
     float    RMS_U = 0;
     float    RMS_fin = 0;
+    float    DC_fin = 0;
     uint8_t  RMS_flag = 0;
     uint8_t  RMS_flag1 = 0;
 
@@ -651,11 +656,12 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
       }
       
       // RMS
+      int32_t u = ADC_16[0];
       int32_t u2 = ADC_16[0] * ADC_16[0];
-      RMS_u += u2;
+      DC_u += u; RMS_u += u2;
       if(++RMS_N >= 3200){ // 1 tic in 100ms
-        RMS_U = RMS_u;
-        RMS_u = 0;
+        DC_U = DC_u; RMS_U = RMS_u;
+        DC_u = 0;    RMS_u = 0;
         RMS_N = 0;
         RMS_flag = 1;
       }
@@ -819,7 +825,8 @@ void Task_RMS(void *argument)
   for(;;)
   {
     if(RMS_flag){
-    RMS_fin = (sqrt(RMS_U/3200) / 32767.0f * 4.096f * 1.1f);
+    RMS_fin = sqrt(RMS_U/3200 - (DC_U/3200)*(DC_U/3200)) / 32767.0f * 4.096f * 1.1f;
+    DC_fin = DC_U/3200 / 32767.0f * 4.096f * 1.1f;
     ModbusRegister[8] = RMS_fin;
     RMS_flag = 0;
     if(RMS_fin == 0){
