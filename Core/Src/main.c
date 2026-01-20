@@ -27,6 +27,7 @@
 #include "ADC.h"
 #include "ModbusRTU_Slave.h"
 #include "flash.h"
+#include "RMS.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -137,17 +138,7 @@ static void MX_NVIC_Init(void);
     uint32_t SPI1_CR1 = 0;
     uint32_t cikl = 0;
     
-    uint32_t RMS_N = 0;
-    
-    int64_t RMS_u = 0;
-    int64_t DC_u = 0;
-    
-    float    DC_U = 0;
-    float    RMS_U = 0;
-    float    RMS_fin = 0;
-    float    DC_fin = 0;
-    uint8_t  RMS_flag = 0;
-    uint8_t  RMS_flag1 = 0;
+
 
 
 // ��� ���)
@@ -194,6 +185,9 @@ int main(void)
 
   ADS131E0_RESET();
   flash_Init();
+  
+  RMS_Init(&RMS_ch1, 3200);
+  RMS_Init(&RMS_ch2, 3200);
   
   // Инициализация Modbus
     DataCounter = 0;
@@ -655,16 +649,9 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
           cikl = 0;
       }
       
-      // RMS
-      int32_t u = ADC_16[0];
-      int32_t u2 = ADC_16[0] * ADC_16[0];
-      DC_u += u; RMS_u += u2;
-      if(++RMS_N >= 3200){ // 1 tic in 100ms
-        DC_U = DC_u; RMS_U = RMS_u;
-        DC_u = 0;    RMS_u = 0;
-        RMS_N = 0;
-        RMS_flag = 1;
-      }
+      RMS_Sample(&RMS_ch1, &ADC_16[0]);
+      RMS_Sample(&RMS_ch2, &ADC_16[1]);
+ 
   }
 }
 
@@ -720,10 +707,6 @@ void Task_ADC_Data(void *argument)
         flag_ADC = 0;
         experement = 0;
         break;
-    }
-    if(RMS_flag == 0){
-      //  Memory_Interleaved_Fast(&ADC_data8[0]);
-        flag_ADC_Data = 0;
     }
     osDelay(1);
        
@@ -824,16 +807,10 @@ void Task_RMS(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    if(RMS_flag){
-    RMS_fin = sqrt(RMS_U/3200 - (DC_U/3200)*(DC_U/3200)) / 32767.0f * 4.096f * 1.1f;
-    DC_fin = DC_U/3200 / 32767.0f * 4.096f * 1.1f;
-    ModbusRegister[8] = RMS_fin;
-    RMS_flag = 0;
-    if(RMS_fin == 0){
-      ADC_START_OFF
-    }
 
-  }
+  RMS_CalcResult(&RMS_ch1);
+  RMS_CalcResult(&RMS_ch2);
+  
   osDelay(1);
   }
   /* USER CODE END Task_RMS */
