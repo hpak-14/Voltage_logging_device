@@ -17,7 +17,7 @@ void RMS_Init(RMS_struct *Srms, uint32_t samples)
 
 void RMS_Sample(RMS_struct *Srms, int16_t *ADC_d){
     int32_t u = (int32_t)(*ADC_d);
-    int32_t u2 = (int32_t)u * (int32_t)u;
+    int32_t u2 = (int32_t)(*ADC_d) * (int32_t)(*ADC_d);
 
     Srms->DC_u  += u;
     Srms->RMS_u += u2;
