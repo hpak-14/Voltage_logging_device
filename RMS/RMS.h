@@ -23,7 +23,7 @@ typedef struct
 } RMS_struct;
 
 extern void RMS_Init(RMS_struct *Srms, uint32_t samples);
-extern void RMS_Sample(RMS_struct *Srms, int16_t *ADC_d);
+extern void RMS_Sample(RMS_struct *Srms, int32_t ADC_d);
 extern void RMS_CalcResult(RMS_struct *Srms);
 
 extern RMS_struct RMS_ch1;

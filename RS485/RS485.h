@@ -1,4 +1,5 @@
 #include "stm32f2xx_hal.h"
+#include "stm32f2xx_it.h"
 
 void RS485_Send(uint8_t *data, uint16_t size);
 void Enable_Transmitter(void);
