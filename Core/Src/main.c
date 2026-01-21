@@ -187,7 +187,7 @@ int main(void)
   flash_Init();
   
   RMS_Init(&RMS_ch1, 3200);
-  RMS_Init(&RMS_ch2, 3200);
+  //RMS_Init(&RMS_ch2, 3200);
   
   // Инициализация Modbus
     DataCounter = 0;
@@ -649,8 +649,8 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
           cikl = 0;
       }
       
-      RMS_Sample(&RMS_ch1, &ADC_16[0]);
-      RMS_Sample(&RMS_ch2, &ADC_16[1]);
+      RMS_Sample(&RMS_ch1, ADC_16[0]);
+      //RMS_Sample(&RMS_ch2, ADC_16[1]);
  
   }
 }
@@ -786,8 +786,8 @@ void Task_Diod(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    HAL_Delay(500);
-    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
+    //HAL_Delay(500);
+    //HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
     
     osDelay(1);
   }
@@ -809,7 +809,7 @@ void Task_RMS(void *argument)
   {
 
   RMS_CalcResult(&RMS_ch1);
-  RMS_CalcResult(&RMS_ch2);
+  //RMS_CalcResult(&RMS_ch2);
   
   osDelay(1);
   }
