@@ -37,7 +37,7 @@
         <stlinkResetStrategy>2</stlinkResetStrategy>
     </StLinkDriver>
     <DebugChecksum>
-        <Checksum>431912063</Checksum>
+        <Checksum>1484434020</Checksum>
     </DebugChecksum>
     <Exceptions>
         <StopOnUncaught>_ 0</StopOnUncaught>
@@ -74,7 +74,8 @@
     <array_types>
         <Fmt0>int16_t[256]	4	0</Fmt0>
         <Fmt1>int16_t[32000]	4	0</Fmt1>
-        <Fmt2>uint8_t[19]	4	0</Fmt2>
+        <Fmt2>int16_t[8]	3	0</Fmt2>
+        <Fmt3>uint8_t[19]	4	0</Fmt3>
     </array_types>
     <watch_formats>
         <Fmt0>{W}42:ADC_16[0]	4	0</Fmt0>
