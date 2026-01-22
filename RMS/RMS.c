@@ -16,16 +16,13 @@ void RMS_Init(RMS_struct *Srms, uint32_t samples)
 }
 
 void RMS_Sample(RMS_struct *Srms, int32_t ADC_d){
-    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);// Красный
     int32_t u = ADC_d;
     int32_t u2 = ADC_d * ADC_d;
 
     Srms->DC_u  += u;
     Srms->RMS_u += u2;
-//    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);// Красный
 
     if (++Srms->RMS_N >= Srms->RMS_samp) {
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);// Зеленый 
         Srms->DC_U = Srms->DC_u;
         Srms->RMS_U = Srms->RMS_u;
 
@@ -34,27 +31,18 @@ void RMS_Sample(RMS_struct *Srms, int32_t ADC_d){
         Srms->RMS_N = 0;
 
         Srms->RMS_flag = 1;
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);// Зеленый
 
     }
 }
         
 void RMS_CalcResult(RMS_struct *Srms){
     if(Srms->RMS_flag){
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);// Желтый
     Srms->RMS_AC = sqrt(Srms->RMS_U/Srms->RMS_samp - (Srms->DC_U/Srms->RMS_samp)*(Srms->DC_U/Srms->RMS_samp)) / 32767.0f * 4.096f * 1.1f;
     Srms->RMS_DC = Srms->DC_U/Srms->RMS_samp / 32767.0f * 4.096f * 1.1f;
     Srms->RMS_flag = 0;
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);// Желтый
     }
 }
 
-RMS_struct RMS_ch1;
-RMS_struct RMS_ch2;
-RMS_struct RMS_ch3;
-RMS_struct RMS_ch4;
-RMS_struct RMS_ch5;
-RMS_struct RMS_ch6;
-RMS_struct RMS_ch7;
-RMS_struct RMS_ch8;
+RMS_struct ch[8];
+
 

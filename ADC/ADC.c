@@ -30,7 +30,7 @@ void ADS131E0_ReadID(){
 }
 
 
-void ADS131E0_RESET(){
+void ADS131E0_Init(){
  
   ADC_PWDN_OFF
   HAL_Delay(100);
@@ -48,57 +48,70 @@ void ADS131E0_RESET(){
   delay(25);
   //////////////////////////////////////////////////////////
  ///*
-  ADC_CMD[0] = 0b00010001;
-  ADC_CS_LOW
-  delay(25);
-  HAL_SPI_Transmit(&hspi1, &ADC_CMD[0], 1, HAL_MAX_DELAY);
-  delay(25);
-  ADC_CS_HIGH
-  delay(25);
+  // 1. Остановить непрерывное чтение
+ADC_CMD[0] = 0b00010001; // SDATAC
+ADC_CS_LOW
+delay(25);
+HAL_SPI_Transmit(&hspi1, &ADC_CMD[0], 1, HAL_MAX_DELAY);
+delay(25);
+ADC_CS_HIGH
+delay(25);
 
-  ADC_CMD[0] = 0b01000101;
-  ADC_CMD[1] = 0b00000000;
-  ADC_CMD[2] = 0b00010001;
-  ADC_CS_LOW
-  delay(100);
-  HAL_SPI_Transmit(&hspi1, &ADC_CMD[0], 1, HAL_MAX_DELAY);
-  delay(100);
-  HAL_SPI_Transmit(&hspi1, &ADC_CMD[1], 1, HAL_MAX_DELAY);
-  delay(100);
-  HAL_SPI_Transmit(&hspi1, &ADC_CMD[2], 1, HAL_MAX_DELAY);
-  delay(100);
-  ADC_CS_HIGH
-  delay(25);
-  
-  ADC_CMD[0] = 0b00011010;
-  ADC_CS_LOW
-  delay(25);
-  HAL_SPI_Transmit(&hspi1, &ADC_CMD[0], 1, HAL_MAX_DELAY);
-  delay(25);
-  ADC_CS_HIGH
-  delay(25);
-  
-  ADC_CMD[0] = 0b01000101;
-  ADC_CMD[1] = 0b00000000;
-  ADC_CMD[2] = 0b00010000;
-  ADC_CS_LOW
-  delay(100);
-  HAL_SPI_Transmit(&hspi1, &ADC_CMD[0], 1, HAL_MAX_DELAY);
-  delay(100);
-  HAL_SPI_Transmit(&hspi1, &ADC_CMD[1], 1, HAL_MAX_DELAY);
-  delay(100);
-  HAL_SPI_Transmit(&hspi1, &ADC_CMD[2], 1, HAL_MAX_DELAY);
-  delay(100);
-  ADC_CS_HIGH
-  delay(25);
-  
-  ADC_CMD[0] = 0b00010000;
-  ADC_CS_LOW
-  delay(25);
-  HAL_SPI_Transmit(&hspi1, &ADC_CMD[0], 1, HAL_MAX_DELAY);
-  delay(25);
-  ADC_CS_HIGH
-  delay(25);
+// 2. Настроить все каналы на замкнутый вход для калибровки
+uint8_t channel_addrs[] = {0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C}; // CH1SET-CH8SET
+
+for(int i = 0; i < 8; i++) {
+    ADC_CMD[0] = 0b01000000 | channel_addrs[i]; // WREG + адрес регистра
+    ADC_CMD[1] = 0b00000000; // 1 регистр
+    ADC_CMD[2] = 0b00010001; // PD=0, GAIN=1, MUX=001 (замкнутый вход)
+    
+    ADC_CS_LOW
+    delay(100);
+    HAL_SPI_Transmit(&hspi1, &ADC_CMD[0], 1, HAL_MAX_DELAY);
+    delay(100);
+    HAL_SPI_Transmit(&hspi1, &ADC_CMD[1], 1, HAL_MAX_DELAY);
+    delay(100);
+    HAL_SPI_Transmit(&hspi1, &ADC_CMD[2], 1, HAL_MAX_DELAY);
+    delay(100);
+    ADC_CS_HIGH
+    delay(25);
+}
+
+// 3. Выполнить калибровку смещения для всех каналов
+ADC_CMD[0] = 0b00011010; // OFFSETCAL
+ADC_CS_LOW
+delay(25);
+HAL_SPI_Transmit(&hspi1, &ADC_CMD[0], 1, HAL_MAX_DELAY);
+delay(25);
+ADC_CS_HIGH
+delay(25);
+
+// 4. Вернуть все каналы к нормальному входу
+for(int i = 0; i < 8; i++) {
+    ADC_CMD[0] = 0b01000000 | channel_addrs[i]; // WREG + адрес регистра
+    ADC_CMD[1] = 0b00000000; // 1 регистр
+    ADC_CMD[2] = 0b00010000; // PD=0, GAIN=1, MUX=000 (нормальный вход)
+    
+    ADC_CS_LOW
+    delay(100);
+    HAL_SPI_Transmit(&hspi1, &ADC_CMD[0], 1, HAL_MAX_DELAY);
+    delay(100);
+    HAL_SPI_Transmit(&hspi1, &ADC_CMD[1], 1, HAL_MAX_DELAY);
+    delay(100);
+    HAL_SPI_Transmit(&hspi1, &ADC_CMD[2], 1, HAL_MAX_DELAY);
+    delay(100);
+    ADC_CS_HIGH
+    delay(25);
+}
+
+// 5. Включить непрерывное чтение
+ADC_CMD[0] = 0b00010000; // RDATAC
+ADC_CS_LOW
+delay(25);
+HAL_SPI_Transmit(&hspi1, &ADC_CMD[0], 1, HAL_MAX_DELAY);
+delay(25);
+ADC_CS_HIGH
+delay(25);
 //*/
 }
 
