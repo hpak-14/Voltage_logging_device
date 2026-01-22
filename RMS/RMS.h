@@ -26,11 +26,5 @@ extern void RMS_Init(RMS_struct *Srms, uint32_t samples);
 extern void RMS_Sample(RMS_struct *Srms, int32_t ADC_d);
 extern void RMS_CalcResult(RMS_struct *Srms);
 
-extern RMS_struct RMS_ch1;
-extern RMS_struct RMS_ch2;
-extern RMS_struct RMS_ch3;
-extern RMS_struct RMS_ch4;
-extern RMS_struct RMS_ch5;
-extern RMS_struct RMS_ch6;
-extern RMS_struct RMS_ch7;
-extern RMS_struct RMS_ch8;
+extern RMS_struct ch[8];
+

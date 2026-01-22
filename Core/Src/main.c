@@ -97,7 +97,7 @@ const osThreadAttr_t Diod_attributes = {
 osThreadId_t RMSHandle;
 const osThreadAttr_t RMS_attributes = {
   .name = "RMS",
-  .stack_size = 128 * 4,
+  .stack_size = 1024 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
 /* USER CODE BEGIN PV */
@@ -128,7 +128,6 @@ static void MX_NVIC_Init(void);
 /* USER CODE BEGIN 0 */
 // ��� ���(
 
-    int16_t ADC_data16[32000] = {0};
     uint8_t ADC_data8[256] = {0};
     int16_t ADC_16[8] = {0};
     
@@ -152,7 +151,8 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+  RMS_Init(&ch[0], 3200);
+  //RMS_Init(&RMS_ch2, 3200);
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -186,8 +186,7 @@ int main(void)
   ADS131E0_RESET();
   flash_Init();
   
-  RMS_Init(&RMS_ch1, 3200);
-  //RMS_Init(&RMS_ch2, 3200);
+
   
   // Инициализация Modbus
     DataCounter = 0;
@@ -618,6 +617,7 @@ static void MX_GPIO_Init(void)
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
   if(flag_ADC){
+      HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);// Красный
       delay(5);
       ADC_CS_HIGH;
       
@@ -639,17 +639,9 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
       ADC_16[6] = (int16_t)(((uint16_t)ADC_rx_data[15] << 8) | ADC_rx_data[16]);  // CH7
       ADC_16[7] = (int16_t)(((uint16_t)ADC_rx_data[17] << 8) | ADC_rx_data[18]);  // CH8
 
-      if (cikl < 2000) {
-          //memcpy(&ADC_data8[cikl * 16],  &ADC_rx_data[3], 16);
-          memcpy(&ADC_data16[cikl * 16],  &ADC_16[0], 16);
-          cikl++;
-      }
-      if (cikl == 2000){
-          flag_ADC_Data = 1;
-          cikl = 0;
-      }
+
       
-      RMS_Sample(&RMS_ch1, ADC_16[0]);
+      RMS_Sample(&ch[0], ADC_16[0]);
       //RMS_Sample(&RMS_ch2, ADC_16[1]);
  
   }
@@ -808,7 +800,7 @@ void Task_RMS(void *argument)
   for(;;)
   {
 
-  RMS_CalcResult(&RMS_ch1);
+  RMS_CalcResult(&ch[0]);
   //RMS_CalcResult(&RMS_ch2);
   
   osDelay(1);
