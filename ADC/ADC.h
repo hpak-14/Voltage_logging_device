@@ -21,8 +21,7 @@ extern uint8_t flag_ADC_Data;
 #define ADC_RESET_OFF          HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);    // RESET OFF
 #define ADC_RESET_ON           HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_RESET);  // RESET ON
 
-void ADS131E0_RESET();
-void ADS131E0_RESET();
+void ADS131E0_Init();
 void ADS131E0_ReadID();
 void ADS131E0_DataRead();
 void delay(uint32_t tik);

@@ -152,7 +152,13 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
   RMS_Init(&ch[0], 3200);
-  //RMS_Init(&RMS_ch2, 3200);
+  RMS_Init(&ch[1], 3200);
+  RMS_Init(&ch[2], 3200);
+  RMS_Init(&ch[3], 3200);
+  RMS_Init(&ch[4], 3200);
+  RMS_Init(&ch[5], 3200);
+  RMS_Init(&ch[6], 3200);
+  RMS_Init(&ch[7], 3200);
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -183,7 +189,7 @@ int main(void)
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
 
-  ADS131E0_RESET();
+  ADS131E0_Init();
   flash_Init();
   
 
@@ -314,7 +320,7 @@ void SystemClock_Config(void)
 static void MX_NVIC_Init(void)
 {
   /* EXTI2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(EXTI2_IRQn, 10, 0);
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 6, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
 }
 
@@ -477,10 +483,10 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA1_Stream3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 10, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 7, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream3_IRQn);
   /* DMA1_Stream4_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 10, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 7, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);
   /* DMA2_Stream0_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 5, 0);
@@ -617,7 +623,6 @@ static void MX_GPIO_Init(void)
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
   if(flag_ADC){
-      HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);// Красный
       delay(5);
       ADC_CS_HIGH;
       
@@ -642,7 +647,13 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 
       
       RMS_Sample(&ch[0], ADC_16[0]);
-      //RMS_Sample(&RMS_ch2, ADC_16[1]);
+      RMS_Sample(&ch[1], ADC_16[1]);
+      RMS_Sample(&ch[2], ADC_16[2]);
+      RMS_Sample(&ch[3], ADC_16[3]);
+      RMS_Sample(&ch[4], ADC_16[4]);
+      RMS_Sample(&ch[5], ADC_16[5]);
+      RMS_Sample(&ch[6], ADC_16[6]);
+      RMS_Sample(&ch[7], ADC_16[7]);
  
   }
 }
@@ -799,9 +810,14 @@ void Task_RMS(void *argument)
   /* Infinite loop */
   for(;;)
   {
-
   RMS_CalcResult(&ch[0]);
-  //RMS_CalcResult(&RMS_ch2);
+  RMS_CalcResult(&ch[1]);
+  RMS_CalcResult(&ch[2]);
+  RMS_CalcResult(&ch[3]);
+  RMS_CalcResult(&ch[4]);
+  RMS_CalcResult(&ch[5]);
+  RMS_CalcResult(&ch[6]);
+  RMS_CalcResult(&ch[7]);
   
   osDelay(1);
   }
