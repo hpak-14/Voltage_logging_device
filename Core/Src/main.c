@@ -191,7 +191,7 @@ int main(void)
   
   ADS131E0_Init();
   flash_Init();
-  
+  HAL_TIM_Base_Start_IT(&htim6); // Запуск таймера с прерыванием
 
   
   // Инициализация Modbus
@@ -433,7 +433,8 @@ static void MX_TIM6_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN TIM6_Init 2 */
-
+  HAL_NVIC_SetPriority(TIM6_DAC_IRQn, 5, 0);  // Приоритет прерывания
+  HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
   /* USER CODE END TIM6_Init 2 */
 
 }
@@ -677,6 +678,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
  ADS131E0_DataRead();
 }
 
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    if(htim->Instance == TIM6)
+    {
+        uartTimer();
+    }
+}
 
 // ��� ���)
 /* USER CODE END 4 */

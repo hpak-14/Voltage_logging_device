@@ -57,6 +57,7 @@ void EXTI2_IRQHandler(void);
 void DMA1_Stream3_IRQHandler(void);
 void DMA1_Stream4_IRQHandler(void);
 void UART4_IRQHandler(void);
+void TIM6_DAC_IRQHandler(void);
 void DMA2_Stream0_IRQHandler(void);
 void DMA2_Stream3_IRQHandler(void);
 void ETH_IRQHandler(void);
