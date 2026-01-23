@@ -6,6 +6,7 @@
  */
 #include <ModbusRTU_Slave.h>
 #include "main.h"
+extern void RS485_Send(uint8_t *data, uint16_t size);
 
 uint8_t uartRxData;
 uint8_t DataCounter;
@@ -13,7 +14,7 @@ uint8_t RxInterruptFlag;
 uint8_t uartTimeCounter;
 uint8_t uartPacketComplatedFlag;
 
-    
+    	uint16_t NumberOfReg = 0;
 char ModbusRx[BUFFERSIZE];
 char tempModbusRx[BUFFERSIZE];
 char ModbusTx[BUFFERSIZE];
@@ -106,7 +107,7 @@ void uartTimer(void)
 {
 	if(RxInterruptFlag == SET)
 	{
-		if(uartTimeCounter++ > 100)
+		if(uartTimeCounter++ > 200)
 		{
 
 			RxInterruptFlag = RESET;
@@ -179,7 +180,7 @@ void makePacket_03(char *msg, uint8_t Lenght)
 	uint8_t i, m = 0;
 
 	uint16_t RegAddress = 0;
-	uint16_t NumberOfReg = 0;
+
 	uint16_t CRCValue;
 
 	RegAddress = (msg[2] << 8) | (msg[3]);
@@ -200,7 +201,7 @@ void makePacket_03(char *msg, uint8_t Lenght)
 	ModbusTx[4 + (NumberOfReg * 2 )] = (CRCValue >> 8);
 	ModbusTx[3 + (NumberOfReg * 2 )] = (CRCValue & 0x00FF);
 	/********************************************************/
-	sendMessage(ModbusTx, 5 + (NumberOfReg * 2 ));
+	RS485_Send(ModbusTx, 5 + (NumberOfReg * 2 ));
 }
 
 /*Write single coil*/
@@ -300,6 +301,29 @@ uint8_t findByte(int16_t NumberOfCoil)
 	return NumberOfByte;
 }
 
+
+
+uint16_t MODBUS_CRC16(char *buf, uint8_t len )
+{
+    static const uint16_t table[2] = { 0x0000, 0xA001 };
+    uint16_t crc = 0xFFFF;
+
+    for (uint8_t i = 0; i < len; i++)
+    {
+        crc ^= buf[i];
+
+        for (uint8_t bit = 0; bit < 8; bit++)
+        {
+            crc = (crc >> 1) ^ table[crc & 0x01];
+        }
+    }
+
+    crc = (crc << 8) | (crc >> 8);
+
+    return crc;   
+}
+
+/*
 uint16_t MODBUS_CRC16(char *buf, uint8_t len )
 {
     static const uint16_t table[2] = { 0x0000, 0xA001 };
@@ -317,31 +341,5 @@ uint16_t MODBUS_CRC16(char *buf, uint8_t len )
 
     return crc;   
 }
-
-
-/*
-uint16_t MODBUS_CRC16(char *buf, uint8_t len )
-{
-    uint16_t crc = 0xFFFF;
-    uint8_t i, j;
-    
-    for(i = 0; i < len; i++)
-    {
-        crc ^= (uint8_t)buf[i];
-        
-        for(j = 0; j < 8; j++)
-        {
-            if(crc & 0x0001)
-            {
-                crc = (crc >> 1) ^ 0xA001;
-            }
-            else
-            {
-                crc >>= 1;
-            }
-        }
-    }
-    
-    return crc;
-}
 */
+

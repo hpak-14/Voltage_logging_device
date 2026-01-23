@@ -1,8 +1,5 @@
 #include "RS485.h"
-#include "stdlib.h"
-#include "string.h"
-#include "stm32f2xx_it.h"
-#include "stm32f2xx_hal_spi.h"
+
 
 extern UART_HandleTypeDef huart4;
 

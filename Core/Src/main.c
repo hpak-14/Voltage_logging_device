@@ -420,7 +420,7 @@ static void MX_TIM6_Init(void)
   htim6.Instance = TIM6;
   htim6.Init.Prescaler = 0;
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim6.Init.Period = 65535;
+  htim6.Init.Period = 194;
   htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
   {
@@ -817,7 +817,7 @@ void Task_RMS(void *argument)
   /* Infinite loop */
   for(;;)
   {
-
+  RMS_CalcResult(&ch[0]);
   RMS_CalcResult(&ch[1]);
   RMS_CalcResult(&ch[2]);
   RMS_CalcResult(&ch[3]);
