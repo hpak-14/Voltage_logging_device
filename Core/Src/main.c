@@ -188,7 +188,7 @@ int main(void)
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
-
+  
   ADS131E0_Init();
   flash_Init();
   
@@ -600,6 +600,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 // ��� ���(
 
+
  void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
   {
       if (hspi == &hspi2)      
@@ -635,14 +636,14 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
       ADC_16[6] = (int16_t)(((uint16_t)ADC_rx_data[15] << 8) | ADC_rx_data[16]);  // CH7
       ADC_16[7] = (int16_t)(((uint16_t)ADC_rx_data[17] << 8) | ADC_rx_data[18]);  // CH8
       
-      ModbusRegister[0] = ADC_16[0];
-      ModbusRegister[1] = ADC_16[1];
-      ModbusRegister[2] = ADC_16[2];
-      ModbusRegister[3] = ADC_16[3];
-      ModbusRegister[4] = ADC_16[4];
-      ModbusRegister[5] = ADC_16[5];
-      ModbusRegister[6] = ADC_16[6];
-      ModbusRegister[7] = ADC_16[7];
+      ModbusRegister[V_M1] = ADC_16[0];
+      ModbusRegister[V_M2] = ADC_16[1];
+      ModbusRegister[V_M3] = ADC_16[2];
+      ModbusRegister[V_M4] = ADC_16[3];
+      ModbusRegister[V_M5] = ADC_16[4];
+      ModbusRegister[V_M6] = ADC_16[5];
+      ModbusRegister[V_M7] = ADC_16[6];
+      ModbusRegister[V_M8] = ADC_16[7];
       
       RMS_Sample(&ch[0], ADC_16[0]);
       RMS_Sample(&ch[1], ADC_16[1]);
@@ -672,7 +673,6 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-  if (hspi1.State != HAL_SPI_STATE_READY) return;
  delay(10);
  ADS131E0_DataRead();
 }
@@ -808,7 +808,7 @@ void Task_RMS(void *argument)
   /* Infinite loop */
   for(;;)
   {
-  RMS_CalcResult(&ch[0]);
+
   RMS_CalcResult(&ch[1]);
   RMS_CalcResult(&ch[2]);
   RMS_CalcResult(&ch[3]);
@@ -816,6 +816,14 @@ void Task_RMS(void *argument)
   RMS_CalcResult(&ch[5]);
   RMS_CalcResult(&ch[6]);
   RMS_CalcResult(&ch[7]);
+  ModbusRegister[V_RMS1] = (uint16_t)(ch[0].RMS_AC * 1000.0f); // мВ
+  ModbusRegister[V_RMS2] = (uint16_t)(ch[1].RMS_AC * 1000.0f); // мВ
+  ModbusRegister[V_RMS3] = (uint16_t)(ch[2].RMS_AC * 1000.0f); // мВ
+  ModbusRegister[V_RMS4] = (uint16_t)(ch[3].RMS_AC * 1000.0f); // мВ
+  ModbusRegister[V_RMS5] = (uint16_t)(ch[4].RMS_AC * 1000.0f); // мВ
+  ModbusRegister[V_RMS6] = (uint16_t)(ch[5].RMS_AC * 1000.0f); // мВ
+  ModbusRegister[V_RMS7] = (uint16_t)(ch[6].RMS_AC * 1000.0f); // мВ
+  ModbusRegister[V_RMS8] = (uint16_t)(ch[7].RMS_AC * 1000.0f); // мВ
   
   osDelay(1);
   }

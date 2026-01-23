@@ -61,4 +61,28 @@ uint16_t MODBUS_CRC16(char *buf, uint8_t len );
 
 
 
+#define V_M1 0
+#define V_M2 1
+#define V_M3 2
+#define V_M4 3
+#define V_M5 4
+#define V_M6 5
+#define V_M7 6
+#define V_M8 7
+
+#define V_RMS1 8
+#define V_RMS2 9
+#define V_RMS3 10
+#define V_RMS4 11
+#define V_RMS5 12
+#define V_RMS6 13
+#define V_RMS7 14
+#define V_RMS8 15
+
+
+
+
+
 #endif /* INC_MODBUSRTU_SLAVE_H_ */
+
+

@@ -90,7 +90,7 @@ void uartDataHandler(void)
 
 		/*CRC Check*/
 		CRCValue = MODBUS_CRC16(tempModbusRx, tempCounter - 2);
-		rxCRC = (tempModbusRx[tempCounter -2] << 8) | (tempModbusRx[tempCounter - 1]);
+                rxCRC = tempModbusRx[tempCounter - 2] | (tempModbusRx[tempCounter - 1] << 8);
 
 		/*If the calculated CRC value and the received CRC value are equal and the Slave ID is correct, respond to the receiving data.  */
 		if(rxCRC == CRCValue && tempModbusRx[0] == SLAVEID)
@@ -302,25 +302,20 @@ uint8_t findByte(int16_t NumberOfCoil)
 
 uint16_t MODBUS_CRC16(char *buf, uint8_t len )
 {
-	static const uint16_t table[2] = { 0x0000, 0xA001 };
-	uint16_t crc = 0xFFFF;
-	unsigned int i = 0;
-	char bit = 0;
-	unsigned int xor = 0;
+    static const uint16_t table[2] = { 0x0000, 0xA001 };
+    uint16_t crc = 0xFFFF;
 
-	for( i = 0; i < len; i++ )
-	{
-		crc ^= buf[i];
+    for (uint8_t i = 0; i < len; i++)
+    {
+        crc ^= buf[i];
 
-		for( bit = 0; bit < 8; bit++ )
-		{
-			xor = crc & 0x01;
-			crc >>= 1;
-			crc ^= table[xor];
-		}
-	}
+        for (uint8_t bit = 0; bit < 8; bit++)
+        {
+            crc = (crc >> 1) ^ table[crc & 0x01];
+        }
+    }
 
-	return (crc << 8) | (crc >> 8);
+    return crc;   
 }
 
 
