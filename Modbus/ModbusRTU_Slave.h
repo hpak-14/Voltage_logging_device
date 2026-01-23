@@ -24,7 +24,7 @@ enum ModbusFunctions
 	WriteMultipleResisters = 0x10,
 };
    
-#define SLAVEID    1
+#define SLAVEID    2
 #define NUMBER_OF_REGISTER 100
 #define NUMBER_OF_COIL 100
 #define BUFFERSIZE (NUMBER_OF_REGISTER * 2 + 5)
@@ -78,6 +78,7 @@ uint16_t MODBUS_CRC16(char *buf, uint8_t len );
 #define V_RMS6 13
 #define V_RMS7 14
 #define V_RMS8 15
+#define ADC_GO 16
 
 
 

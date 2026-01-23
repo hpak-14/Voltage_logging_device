@@ -703,28 +703,24 @@ void Task_ADC_Data(void *argument)
   MX_LWIP_Init();
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
-  for(;;)
-  {
-    switch (experement){
-    case 1:
-        ADC_START_ON
-        flag_ADC = 1;
-        experement = 0;
-        break;
-    
-    case 2:
-        ADC_START_OFF
-        flag_ADC = 0;
-        experement = 0;
-        break;
-    }
-    osDelay(1);
-       
-  //  default:
-      //  vTaskSuspend(NULL);
+  int8_t prev_state = 0xFF;  
 
-    
-  }
+    /* Infinite loop */
+    for(;;)
+    {
+        uint8_t current_state = ModbusRegister[ADC_GO];
+
+        if (current_state != prev_state) {
+            if (current_state) {
+                ADC_START_ON;
+            } else {
+                ADC_START_OFF;
+            }
+            prev_state = current_state;
+        }
+
+        osDelay(1);  
+    }
   /* USER CODE END 5 */
 }
 
