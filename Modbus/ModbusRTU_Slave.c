@@ -303,7 +303,7 @@ uint8_t findByte(int16_t NumberOfCoil)
 
 
 /*
-uint16_t MODBUS_CRC16(char *buf, uint8_t len )// Нормальный CRC16
+uint16_t MODBUS_CRC16(char *buf, uint8_t len )// Нормальный CRC16.
 {
     static const uint16_t table[2] = { 0x0000, 0xA001 };
     uint16_t crc = 0xFFFF;
@@ -324,7 +324,7 @@ uint16_t MODBUS_CRC16(char *buf, uint8_t len )// Нормальный CRC16
 }
 
 */
-uint16_t MODBUS_CRC16(char *buf, uint8_t len )// Перевернутый CRC16
+uint16_t MODBUS_CRC16(char *buf, uint8_t len )// Перевернутый CRC16.
 {
     static const uint16_t table[2] = { 0x0000, 0xA001 };
     uint16_t crc = 0xFFFF;
