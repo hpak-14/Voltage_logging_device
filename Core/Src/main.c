@@ -178,6 +178,7 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
+  HAL_Delay(100);
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_UART4_Init();
@@ -189,10 +190,9 @@ int main(void)
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
   
-  ADS131E0_Init();
   flash_Init();
   HAL_TIM_Base_Start_IT(&htim6); // Запуск таймера с прерыванием
-
+  ADS131E0_Init();
   
   // Инициализация Modbus
     DataCounter = 0;
