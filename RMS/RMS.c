@@ -33,6 +33,7 @@ void RMS_Sample(RMS_struct *Srms, int32_t ADC_d){
         Srms->RMS_flag = 1;
         
         Srms->RMS_ADC = ADC_d;
+        //Srms->RMS_MG = ADC_d;
 
     }
 }
@@ -41,7 +42,7 @@ void RMS_CalcResult(RMS_struct *Srms){
     if(Srms->RMS_flag){
     Srms->RMS_AC = sqrt(Srms->RMS_U/Srms->RMS_samp - (Srms->DC_U/Srms->RMS_samp)*(Srms->DC_U/Srms->RMS_samp)) / 32767.0f * 4.096f * 1.1f;
     Srms->RMS_DC = Srms->DC_U/Srms->RMS_samp / 32767.0f * 4.096f * 1.1f;
-    Srms->RMS_MG = Srms->RMS_ADC / 32767.0f * 4.096f * 1.1f;
+    Srms->RMS_MG = Srms->RMS_ADC / 32767.0f * 4.096f * 1.1f * 1000.0f;
     Srms->RMS_flag = 0;
     }
 }

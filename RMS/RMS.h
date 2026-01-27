@@ -18,7 +18,7 @@ typedef struct
     float    RMS_U;
     float    RMS_AC;
     float    RMS_DC;
-    float    RMS_ADC; 
+    int32_t    RMS_ADC; 
     float    RMS_MG;  // ћгновенные знач
     uint8_t  RMS_flag;
     

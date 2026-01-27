@@ -814,14 +814,14 @@ void Task_RMS(void *argument)
   RMS_CalcResult(&ch[5]);
   RMS_CalcResult(&ch[6]);
   RMS_CalcResult(&ch[7]);
-  ModbusRegister[MB_M1]   = (uint16_t)(ch[0].RMS_MG * 1000.0f); // мВ
-  ModbusRegister[MB_M2]   = (uint16_t)(ch[1].RMS_MG * 1000.0f); // мВ
-  ModbusRegister[MB_M3]   = (uint16_t)(ch[2].RMS_MG * 1000.0f); // мВ
-  ModbusRegister[MB_M4]   = (uint16_t)(ch[3].RMS_MG * 1000.0f); // мВ
-  ModbusRegister[MB_M5]   = (uint16_t)(ch[4].RMS_MG * 1000.0f); // мВ
-  ModbusRegister[MB_M6]   = (uint16_t)(ch[5].RMS_MG * 1000.0f); // мВ
-  ModbusRegister[MB_M7]   = (uint16_t)(ch[6].RMS_MG * 1000.0f); // мВ
-  ModbusRegister[MB_M8]   = (uint16_t)(ch[7].RMS_MG * 1000.0f); // мВ
+  ModbusRegister[MB_M1]   = (uint16_t)(ch[0].RMS_MG); // мВ
+  ModbusRegister[MB_M2]   = (uint16_t)(ch[1].RMS_MG); // мВ
+  ModbusRegister[MB_M3]   = (uint16_t)(ch[2].RMS_MG); // мВ
+  ModbusRegister[MB_M4]   = (uint16_t)(ch[3].RMS_MG); // мВ
+  ModbusRegister[MB_M5]   = (uint16_t)(ch[4].RMS_MG); // мВ
+  ModbusRegister[MB_M6]   = (uint16_t)(ch[5].RMS_MG); // мВ
+  ModbusRegister[MB_M7]   = (uint16_t)(ch[6].RMS_MG); // мВ
+  ModbusRegister[MB_M8]   = (uint16_t)(ch[7].RMS_MG); // мВ
   ModbusRegister[MB_RMS1] = (uint16_t)(ch[0].RMS_AC * 1000.0f); // мВ
   ModbusRegister[MB_RMS2] = (uint16_t)(ch[1].RMS_AC * 1000.0f); // мВ
   ModbusRegister[MB_RMS3] = (uint16_t)(ch[2].RMS_AC * 1000.0f); // мВ

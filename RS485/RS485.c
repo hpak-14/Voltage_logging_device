@@ -15,12 +15,15 @@ void Enable_Receiver(void) {
 
 
 void RS485_Send(uint8_t *data, uint16_t size){
-  
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+    
     Enable_Transmitter();
     
     HAL_UART_Transmit(&huart4, data, size, 1000);
     
     Enable_Receiver();
+    
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
 }
 
 
