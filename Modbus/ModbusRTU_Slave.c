@@ -70,7 +70,12 @@ void transmitDataMake(char *msg, uint8_t Lenght)
 	case WriteMultipleResisters:
 		makePacket_16(msg, Lenght);
 		break;
+                
+        default:
+                ILLEGAL_FUNCTION(msg, Lenght);
+        
 	}
+        
 
 }
 
@@ -82,7 +87,7 @@ void uartDataHandler(void)
 
 	if(uartPacketComplatedFlag == SET)     //Data receiving is finished
 	{
-		uartPacketComplatedFlag = RESET;
+            uartPacketComplatedFlag = RESET;
 	    memcpy(tempModbusRx, ModbusRx, DataCounter + 1);
 	    tempCounter = DataCounter;
 		DataCounter = 0;
@@ -227,6 +232,23 @@ void makePacket_06(char *msg, uint8_t Lenght)
 	sendMessage(msg, Lenght);
 
 }
+
+
+  void ILLEGAL_FUNCTION(char *msg, uint8_t Lenght){
+
+    uint16_t crc;
+
+    ModbusTx[0] = msg[0];              // Slave Address
+    ModbusTx[1] = msg[1] | 0x80;       // Function + 0x80
+    ModbusTx[2] = 0x01;                // Illegal Function
+
+    crc = MODBUS_CRC16(ModbusTx, 3);
+    ModbusTx[3] = crc & 0xFF;
+    ModbusTx[4] = crc >> 8;
+
+    RS485_Send(ModbusTx, 5);
+}
+
 
 /*Write multiple coils*/
 void makePacket_15(char *msg, uint8_t Lenght)

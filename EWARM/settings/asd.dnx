@@ -25,8 +25,8 @@
         <MemConfigValue>C:\Program Files\IAR Systems\Embedded Workbench 9.2\arm\config\debugger\ST\STM32F207VE.ddf</MemConfigValue>
     </PlDriver>
     <ArmDriver>
-        <EnforceMemoryConfiguration>1</EnforceMemoryConfiguration>
         <EnableCache>0</EnableCache>
+        <EnforceMemoryConfiguration>1</EnforceMemoryConfiguration>
     </ArmDriver>
     <StLinkDriver>
         <stlinkserialNo>066BFF535455886687122214</stlinkserialNo>
@@ -37,7 +37,7 @@
         <stlinkResetStrategy>2</stlinkResetStrategy>
     </StLinkDriver>
     <DebugChecksum>
-        <Checksum>1863363420</Checksum>
+        <Checksum>1335999835</Checksum>
     </DebugChecksum>
     <Exceptions>
         <StopOnUncaught>_ 0</StopOnUncaught>
@@ -76,7 +76,7 @@
         <Fmt1>int16_t[256]	4	0</Fmt1>
         <Fmt2>int16_t[32000]	4	0</Fmt2>
         <Fmt3>int16_t[8]	3	0</Fmt3>
-        <Fmt4>uint16_t[100]	4	0</Fmt4>
+        <Fmt4>uint16_t[100]	3	0</Fmt4>
         <Fmt5>uint8_t[19]	4	0</Fmt5>
     </array_types>
     <watch_formats>
@@ -128,13 +128,6 @@
         <ShowTimeSum>1</ShowTimeSum>
         <SumSortOrder>0</SumSortOrder>
     </EventLog>
-    <DriverProfiling>
-        <Enabled>0</Enabled>
-        <Mode>3</Mode>
-        <Graph>0</Graph>
-        <Symbiont>0</Symbiont>
-        <Exclusions />
-    </DriverProfiling>
     <TermIOLog>
         <LoggingEnabled>_ 0</LoggingEnabled>
         <LogFile>_ ""</LogFile>
@@ -149,4 +142,11 @@
         <Count>0</Count>
         <SuppressDialog>0</SuppressDialog>
     </Aliases>
+    <DriverProfiling>
+        <Enabled>0</Enabled>
+        <Mode>3</Mode>
+        <Graph>0</Graph>
+        <Symbiont>0</Symbiont>
+        <Exclusions />
+    </DriverProfiling>
 </settings>
