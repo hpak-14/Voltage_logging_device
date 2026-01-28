@@ -6,22 +6,25 @@ extern uint32_t RMS_N;
 extern int64_t  RMS_u;
 extern int64_t  DC_u;
 
-typedef struct
-{
+typedef struct {
     uint32_t RMS_samp;
     uint32_t RMS_N;
-        
-    int64_t  RMS_u;
+
     int64_t  DC_u;
-        
-    float    DC_U;
-    float    RMS_U;
-    float    RMS_AC;
-    float    RMS_DC;
-    int32_t    RMS_ADC; 
-    float    RMS_MG;  // ћгновенные знач
-    uint8_t  RMS_flag;
+    uint64_t RMS_u;
+
+    uint64_t RMS_U;
+    int64_t  DC_U;
+
+    float RMS_AC;
+    float RMS_DC;
+    float RMS_MG;
+
+    int32_t    RMS_ADC;
     
+    uint8_t RMS_flag;
+
+    uint64_t win_idx;   // <-- индекс окна
 } RMS_struct;
 
 extern void RMS_Init(RMS_struct *Srms, uint32_t samples);
