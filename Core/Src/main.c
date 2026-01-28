@@ -178,7 +178,6 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  HAL_Delay(100);
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_UART4_Init();
@@ -420,7 +419,7 @@ static void MX_TIM6_Init(void)
   htim6.Instance = TIM6;
   htim6.Init.Prescaler = 0;
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim6.Init.Period = 194;
+  htim6.Init.Period = 250;
   htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
   {
@@ -625,9 +624,9 @@ static void MX_GPIO_Init(void)
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
   if(flag_ADC && hspi == &hspi1){
-     // delay(5);
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); 
       ADC_CS_HIGH;
-      
+   
       ADC_16[0] = (int16_t)(((uint16_t)ADC_rx_data[3]  << 8) | ADC_rx_data[4]);   // CH1
       ADC_16[1] = (int16_t)(((uint16_t)ADC_rx_data[5]  << 8) | ADC_rx_data[6]);   // CH2
       ADC_16[2] = (int16_t)(((uint16_t)ADC_rx_data[7]  << 8) | ADC_rx_data[8]);   // CH3
@@ -636,7 +635,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
       ADC_16[5] = (int16_t)(((uint16_t)ADC_rx_data[13] << 8) | ADC_rx_data[14]);  // CH6
       ADC_16[6] = (int16_t)(((uint16_t)ADC_rx_data[15] << 8) | ADC_rx_data[16]);  // CH7
       ADC_16[7] = (int16_t)(((uint16_t)ADC_rx_data[17] << 8) | ADC_rx_data[18]);  // CH8
-      
+
       RMS_Sample(&ch[0], ADC_16[0]);
       RMS_Sample(&ch[1], ADC_16[1]);
       RMS_Sample(&ch[2], ADC_16[2]);
@@ -645,7 +644,8 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
       RMS_Sample(&ch[5], ADC_16[5]);
       RMS_Sample(&ch[6], ADC_16[6]);
       RMS_Sample(&ch[7], ADC_16[7]);
- 
+
+
   }
 }
 
@@ -665,7 +665,8 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
- delay(10);
+ HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); 
+ delay(4);
  ADS131E0_DataRead();
 }
 
@@ -704,10 +705,8 @@ void Task_ADC_Data(void *argument)
         if (current_state != prev_state) {
             if (current_state) {
                 ADC_START_ON;
-                HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); 
             } else {
                 ADC_START_OFF;
-                HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); 
             }
             prev_state = current_state;
         }
@@ -806,6 +805,7 @@ void Task_RMS(void *argument)
   /* Infinite loop */
   for(;;)
   {
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);   
   RMS_CalcResult(&ch[0]);
   RMS_CalcResult(&ch[1]);
   RMS_CalcResult(&ch[2]);
@@ -830,7 +830,7 @@ void Task_RMS(void *argument)
   ModbusRegister[MB_RMS6] = (uint16_t)(ch[5].RMS_AC * 1000.0f); // мВ
   ModbusRegister[MB_RMS7] = (uint16_t)(ch[6].RMS_AC * 1000.0f); // мВ
   ModbusRegister[MB_RMS8] = (uint16_t)(ch[7].RMS_AC * 1000.0f); // мВ
-
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);   
   
   osDelay(1);
   }

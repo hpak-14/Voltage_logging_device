@@ -119,7 +119,7 @@ delay(25);
 void ADS131E0_DataRead(){
   
   ADC_CS_LOW
-  delay(20);
+  delay(4);
   HAL_SPI_TransmitReceive_DMA(&hspi1, &Noliki[0], &ADC_rx_data[0], 19);
 }
 
