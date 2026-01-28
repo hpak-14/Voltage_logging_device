@@ -192,13 +192,8 @@ int main(void)
   flash_Init();
   HAL_TIM_Base_Start_IT(&htim6); // Запуск таймера с прерыванием
   ADS131E0_Init();
-  
-  // Инициализация Modbus
-    DataCounter = 0;
-    RxInterruptFlag = RESET;
-    uartTimeCounter = 0;
-    uartPacketComplatedFlag = RESET;
-    HAL_UART_Receive_IT(&huart4, &uartRxData, 1);  // Включаем прерывание по приему
+  Init_Modbus();
+
 
      
   /* USER CODE END 2 */
@@ -561,6 +556,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : GPIO1_Pin GPIO2_Pin GPIO3_Pin GPIO4_Pin */
+  GPIO_InitStruct.Pin = GPIO1_Pin|GPIO2_Pin|GPIO3_Pin|GPIO4_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
   /*Configure GPIO pins : LED_3_Pin LED_2_Pin LED_1_Pin */
   GPIO_InitStruct.Pin = LED_3_Pin|LED_2_Pin|LED_1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -814,6 +815,7 @@ void Task_RMS(void *argument)
   RMS_CalcResult(&ch[5]);
   RMS_CalcResult(&ch[6]);
   RMS_CalcResult(&ch[7]);
+  
   ModbusRegister[MB_M1]   = (uint16_t)(ch[0].RMS_MG); // мВ
   ModbusRegister[MB_M2]   = (uint16_t)(ch[1].RMS_MG); // мВ
   ModbusRegister[MB_M3]   = (uint16_t)(ch[2].RMS_MG); // мВ
@@ -822,6 +824,7 @@ void Task_RMS(void *argument)
   ModbusRegister[MB_M6]   = (uint16_t)(ch[5].RMS_MG); // мВ
   ModbusRegister[MB_M7]   = (uint16_t)(ch[6].RMS_MG); // мВ
   ModbusRegister[MB_M8]   = (uint16_t)(ch[7].RMS_MG); // мВ
+  
   ModbusRegister[MB_RMS1] = (uint16_t)(ch[0].RMS_AC * 1000.0f); // мВ
   ModbusRegister[MB_RMS2] = (uint16_t)(ch[1].RMS_AC * 1000.0f); // мВ
   ModbusRegister[MB_RMS3] = (uint16_t)(ch[2].RMS_AC * 1000.0f); // мВ
@@ -830,6 +833,16 @@ void Task_RMS(void *argument)
   ModbusRegister[MB_RMS6] = (uint16_t)(ch[5].RMS_AC * 1000.0f); // мВ
   ModbusRegister[MB_RMS7] = (uint16_t)(ch[6].RMS_AC * 1000.0f); // мВ
   ModbusRegister[MB_RMS8] = (uint16_t)(ch[7].RMS_AC * 1000.0f); // мВ
+  
+  ModbusRegister[MB_DC1] = (uint16_t)(ch[0].RMS_DC * 1000.0f); // мВ
+  ModbusRegister[MB_DC2] = (uint16_t)(ch[1].RMS_DC * 1000.0f); // мВ
+  ModbusRegister[MB_DC3] = (uint16_t)(ch[2].RMS_DC * 1000.0f); // мВ
+  ModbusRegister[MB_DC4] = (uint16_t)(ch[3].RMS_DC * 1000.0f); // мВ
+  ModbusRegister[MB_DC5] = (uint16_t)(ch[4].RMS_DC * 1000.0f); // мВ
+  ModbusRegister[MB_DC6] = (uint16_t)(ch[5].RMS_DC * 1000.0f); // мВ
+  ModbusRegister[MB_DC7] = (uint16_t)(ch[6].RMS_DC * 1000.0f); // мВ
+  ModbusRegister[MB_DC8] = (uint16_t)(ch[7].RMS_DC * 1000.0f); // мВ
+  
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);   
   
   osDelay(1);

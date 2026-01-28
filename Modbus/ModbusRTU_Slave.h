@@ -1,11 +1,3 @@
-/*
- * Modbus_Lib.h
- *
- *  Created on: Feb 10, 2022
- *      Author: Ümit Can Güveren
- */
-
-
 #ifndef INC_MODBUSRTU_SLAVE_H_
 #define INC_MODBUSRTU_SLAVE_H_
 
@@ -24,7 +16,7 @@ enum ModbusFunctions
 	WriteMultipleResisters = 0x10,
 };
    
-#define SLAVEID    2
+
 #define NUMBER_OF_REGISTER 100
 #define NUMBER_OF_COIL 100
 #define BUFFERSIZE (NUMBER_OF_REGISTER * 2 + 5)
@@ -32,7 +24,7 @@ enum ModbusFunctions
 extern uint16_t ModbusRegister[NUMBER_OF_REGISTER];
 extern bool ModbusCoil[NUMBER_OF_COIL];
 
-
+extern uint8_t SLAVEID;
 extern uint8_t uartRxData;
 extern uint8_t DataCounter;
 extern uint8_t RxInterruptFlag;
@@ -59,7 +51,7 @@ void ILLEGAL_FUNCTION(char *msg, uint8_t Lenght);
 void sendMessage(char *msg, uint8_t len);
 uint8_t findByte(int16_t NumberOfCoil);
 uint16_t MODBUS_CRC16(char *buf, uint8_t len );
-
+void Init_Modbus(void);
 
 
 //*** Карта регистров Modbus ***//
@@ -84,41 +76,51 @@ uint16_t MODBUS_CRC16(char *buf, uint8_t len );
 #define MB_RMS7 14
 #define MB_RMS8 15
 
+// DC
+#define MB_DC1 16
+#define MB_DC2 17
+#define MB_DC3 18
+#define MB_DC4 19
+#define MB_DC5 20
+#define MB_DC6 21
+#define MB_DC7 22
+#define MB_DC8 23
+
 // Старт АЦП (1-Старт 0-Стоп)
-#define MB_ADC_START 16
+#define MB_ADC_START 24
 
 // Запись в LOG (1-Логировать канал 0-Выключить логирования канала) Через битовую маску
-#define MB_LOG_ch 17
+#define MB_LOG_ch 25
 
 // Объём памяти LOGа
-#define MB_LOG_SISE 18
+#define MB_LOG_SISE 26
 
 // Заданный Адресс устройства
-#define MB_add 19
+#define MB_add 27
 
 // Описание устройства(ХЗ зачем, серега(Омск) сказал добавить)
-#define MB_info_device 20
+#define MB_info_device 28
 
 // ХЗ зачем, серега(Омск) сказал добавить
-#define MB_LOG_protocol_info 21
+#define MB_LOG_protocol_info 29
 
 // Ethernet config
-#define MB_Ethernet_conf_1  22
-#define MB_Ethernet_conf_2  23
-#define MB_Ethernet_conf_3  24
-#define MB_Ethernet_conf_4  25
-#define MB_Ethernet_conf_5  26
-#define MB_Ethernet_conf_6  27
-#define MB_Ethernet_conf_7  28
-#define MB_Ethernet_conf_8  29
-#define MB_Ethernet_conf_9  30
-#define MB_Ethernet_conf_10 31
-#define MB_Ethernet_conf_11 32
-#define MB_Ethernet_conf_12 33
-#define MB_Ethernet_conf_13 34
-#define MB_Ethernet_conf_14 35
-#define MB_Ethernet_conf_15 36
-#define MB_Ethernet_conf_16 37
+#define MB_Ethernet_conf_1  28
+#define MB_Ethernet_conf_2  29
+#define MB_Ethernet_conf_3  30
+#define MB_Ethernet_conf_4  31
+#define MB_Ethernet_conf_5  32
+#define MB_Ethernet_conf_6  33
+#define MB_Ethernet_conf_7  34
+#define MB_Ethernet_conf_8  35
+#define MB_Ethernet_conf_9  36
+#define MB_Ethernet_conf_10 37
+#define MB_Ethernet_conf_11 38
+#define MB_Ethernet_conf_12 39
+#define MB_Ethernet_conf_13 40
+#define MB_Ethernet_conf_14 41
+#define MB_Ethernet_conf_15 42
+#define MB_Ethernet_conf_16 43
 
 
 

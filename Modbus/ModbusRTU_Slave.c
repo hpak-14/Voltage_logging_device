@@ -1,9 +1,3 @@
-/*
- * Modbus_Lib.c
- *
- *  Created on: Feb 10, 2022
- *      Author: Ümit Can Güveren
- */
 #include <ModbusRTU_Slave.h>
 #include "main.h"
 extern void RS485_Send(uint8_t *data, uint16_t size);
@@ -13,6 +7,7 @@ uint8_t DataCounter;
 uint8_t RxInterruptFlag;
 uint8_t uartTimeCounter;
 uint8_t uartPacketComplatedFlag;
+uint8_t SLAVEID = 0;
 
     	uint16_t NumberOfReg = 0;
 char ModbusRx[BUFFERSIZE];
@@ -47,9 +42,9 @@ void transmitDataMake(char *msg, uint8_t Lenght)
 {
 	switch(msg[1])
 	{
-	case ReadCoil:
-		makePacket_01(msg, Lenght);
-		break;
+	//case ReadCoil:
+		//makePacket_01(msg, Lenght);
+		//break;
 
 	case ReadHoldingRegister:
 		makePacket_03(msg, Lenght);
@@ -59,17 +54,17 @@ void transmitDataMake(char *msg, uint8_t Lenght)
 		makePacket_06(msg, Lenght);
 		break;
 
-	case WriteSingleCoil:
-		makePacket_05(msg, Lenght);
-		break;
+	//case WriteSingleCoil:
+		//makePacket_05(msg, Lenght);
+		//break;
 
-	case WriteMultipleCoils:
-		makePacket_15(msg, Lenght);
-		break;
+	//case WriteMultipleCoils:
+		//makePacket_15(msg, Lenght);
+		//break;
 
-	case WriteMultipleResisters:
-		makePacket_16(msg, Lenght);
-		break;
+	//case WriteMultipleResisters:
+		//makePacket_16(msg, Lenght);
+		//break;
                 
         default:
                 ILLEGAL_FUNCTION(msg, Lenght);
@@ -364,4 +359,20 @@ uint16_t MODBUS_CRC16(char *buf, uint8_t len )// Перевернутый CRC16.
     return crc;   
 }
 
+
+void Init_Modbus(void){
+
+    DataCounter = 0;
+    RxInterruptFlag = RESET;
+    uartTimeCounter = 0;
+    uartPacketComplatedFlag = RESET;
+    HAL_UART_Receive_IT(&huart4, &uartRxData, 1);  // Включаем прерывание по приему
+
+    if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_11) == GPIO_PIN_RESET) SLAVEID |= (1 << 0); // тумблер 1
+    if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_10) == GPIO_PIN_RESET) SLAVEID |= (1 << 1); // тумблер 2
+    if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_9)  == GPIO_PIN_RESET) SLAVEID |= (1 << 2); // тумблер 3
+    if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_8)  == GPIO_PIN_RESET) SLAVEID |= (1 << 3); // тумблер 4
+    ModbusRegister[MB_add] = SLAVEID;
+
+}
 
