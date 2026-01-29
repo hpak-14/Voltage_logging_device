@@ -35,21 +35,21 @@ extern uint8_t DataCounter;
 extern uint8_t RxInterruptFlag;
 extern uint8_t uartTimeCounter;
 extern uint8_t uartPacketComplatedFlag;
-extern char ModbusRx[BUFFERSIZE];
+extern uint8_t ModbusRx[BUFFERSIZE];
 
 /* Receiver functions */
 void uartDataHandler(void);
 void uartTimer(void);
-void transmitDataMake(char *msg, uint8_t Lenght);
+void transmitDataMake(uint8_t *msg, uint8_t Lenght);
 
 
 /* Modbus Functions */
-void makePacket_01(char *msg, uint8_t Lenght);
-void makePacket_03_04(char *msg, uint8_t Lenght);
-void makePacket_05(char *msg, uint8_t Lenght);
-void makePacket_06(char *msg, uint8_t Lenght);
-void makePacket_15(char *msg, uint8_t Lenght);
-void makePacket_16(char *msg, uint8_t Lenght);
+void makePacket_01(uint8_t *msg, uint8_t Lenght);
+void makePacket_03_04(uint8_t *msg, uint8_t Lenght);
+void makePacket_05(uint8_t *msg, uint8_t Lenght);
+void makePacket_06(uint8_t *msg, uint8_t Lenght);
+void makePacket_15(uint8_t *msg, uint8_t Lenght);
+void makePacket_16(uint8_t *msg, uint8_t Lenght);
 
 void ILLEGAL_FUNCTION(uint8_t *msg);
 void ILLEGAL_DATA_ADDRESS(uint8_t *msg);
@@ -57,9 +57,9 @@ void ILLEGAL_DATA_VALUE(uint8_t *msg);
 bool  Modbus_CheckIllegalDataAddress(uint8_t *msg);
 bool Modbus_CheckIllegalDataValue(uint8_t *msg);
 
-void sendMessage(char *msg, uint8_t len);
+void sendMessage(uint8_t *msg, uint8_t len);
 uint8_t findByte(int16_t NumberOfCoil);
-uint16_t MODBUS_CRC16(char *buf, uint8_t len );
+uint16_t MODBUS_CRC16(uint8_t *buf, uint8_t len );
 void Init_Modbus(void);
 
 
@@ -109,16 +109,16 @@ void Init_Modbus(void);
 #define MB_add 28
 
 // Описание устройства(ХЗ что здесь должно быть)
-#define MB_info_device 29
-#define MB_info_device 30
-#define MB_info_device 31
-#define MB_info_device 32
+//#define MB_info_device 29
+//#define MB_info_device 30
+//#define MB_info_device 31
+//#define MB_info_device 32
 
 // ХЗ зачем
-#define MB_LOG_protocol_info 33
-#define MB_LOG_protocol_info 34
-#define MB_LOG_protocol_info 35
-#define MB_LOG_protocol_info 36
+//#define MB_LOG_protocol_info 33
+//#define MB_LOG_protocol_info 34
+//#define MB_LOG_protocol_info 35
+//#define MB_LOG_protocol_info 36
 
 // Номер считываемой подзаписи в данный момент
 #define MB_LOG_read_number 37

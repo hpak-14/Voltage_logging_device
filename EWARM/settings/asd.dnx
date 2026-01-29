@@ -37,7 +37,7 @@
         <stlinkResetStrategy>2</stlinkResetStrategy>
     </StLinkDriver>
     <DebugChecksum>
-        <Checksum>2568149903</Checksum>
+        <Checksum>2684950662</Checksum>
     </DebugChecksum>
     <Exceptions>
         <StopOnUncaught>_ 0</StopOnUncaught>

@@ -10,9 +10,9 @@ uint8_t uartPacketComplatedFlag;
 uint8_t SLAVEID = 0;
 
     	uint16_t NumberOfReg = 0;
-char ModbusRx[BUFFERSIZE];
-char tempModbusRx[BUFFERSIZE];
-char ModbusTx[BUFFERSIZE];
+uint8_t ModbusRx[BUFFERSIZE];
+uint8_t tempModbusRx[BUFFERSIZE];
+uint8_t ModbusTx[BUFFERSIZE];
 
 uint16_t rxCRC;
 
@@ -38,7 +38,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 
 /*calls the corresponding function according to the received function command*/
-void transmitDataMake(char *msg, uint8_t Lenght)
+void transmitDataMake(uint8_t *msg, uint8_t Lenght)
 {
 
         if(Modbus_CheckIllegalDataAddress(msg)) return;
@@ -125,7 +125,7 @@ void uartTimer(void)
 	}
 }
 
-void sendMessage(char *msg, uint8_t len)
+void sendMessage(uint8_t *msg, uint8_t len)
 {
         HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);  
 	HAL_UART_Transmit_IT(&huart4, (uint8_t *)msg, len); 
@@ -136,7 +136,7 @@ void sendMessage(char *msg, uint8_t len)
 //The function are used to respond to receiving modbus data.
 
 /*Send coil data*/
-void makePacket_01(char *msg, uint8_t Lenght)
+void makePacket_01(uint8_t *msg, uint8_t Lenght)
 {
     uint16_t RegAddress, NumberCoils, NumberByte, CRCValue;
     RegAddress = (msg[2] << 8) | (msg[3]);
@@ -183,7 +183,7 @@ void makePacket_01(char *msg, uint8_t Lenght)
 }
 
 /*Send register data*/
-void makePacket_03_04(char *msg, uint8_t Lenght)
+void makePacket_03_04(uint8_t *msg, uint8_t Lenght)
 {
 	uint8_t i, m = 0;
 
@@ -213,7 +213,7 @@ void makePacket_03_04(char *msg, uint8_t Lenght)
 }
 
 /*Write single coil*/
-void makePacket_05(char *msg, uint8_t Lenght)
+void makePacket_05(uint8_t *msg, uint8_t Lenght)
 {
 	uint16_t RegAddress, RegValue;
 	RegAddress = (msg[2] << 8) | (msg[3]);
@@ -225,7 +225,7 @@ void makePacket_05(char *msg, uint8_t Lenght)
 }
 
 /*Write single register*/
-void makePacket_06(char *msg, uint8_t Lenght)
+void makePacket_06(uint8_t *msg, uint8_t Lenght)
 {
 	uint16_t RegAddress, RegValue;
 	RegAddress = (msg[2] << 8) | (msg[3]);
@@ -237,7 +237,7 @@ void makePacket_06(char *msg, uint8_t Lenght)
 }
 
 /*Write multiple coils*/
-void makePacket_15(char *msg, uint8_t Lenght)
+void makePacket_15(uint8_t *msg, uint8_t Lenght)
 {
 	uint16_t NumberOfCoils, CRCValue;
 	uint8_t i,m,k;
@@ -270,7 +270,7 @@ void makePacket_15(char *msg, uint8_t Lenght)
 
 
 /*Write multiple registers*/
-void makePacket_16(char *msg, uint8_t Lenght)
+void makePacket_16(uint8_t *msg, uint8_t Lenght)
 {
 	HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
 	uint16_t RegAddress, NumberOfReg, CRCValue;
@@ -311,7 +311,7 @@ uint8_t findByte(int16_t NumberOfCoil)
 
 
 /*
-uint16_t MODBUS_CRC16(char *buf, uint8_t len )// Нормальный CRC16.
+uint16_t MODBUS_CRC16(uint8_t *buf, uint8_t len )// Нормальный CRC16.
 {
     static const uint16_t table[2] = { 0x0000, 0xA001 };
     uint16_t crc = 0xFFFF;
@@ -332,7 +332,7 @@ uint16_t MODBUS_CRC16(char *buf, uint8_t len )// Нормальный CRC16.
 }
 
 */
-uint16_t MODBUS_CRC16(char *buf, uint8_t len )// Перевернутый CRC16.
+uint16_t MODBUS_CRC16(uint8_t *buf, uint8_t len )// Перевернутый CRC16.
 {
     static const uint16_t table[2] = { 0x0000, 0xA001 };
     uint16_t crc = 0xFFFF;

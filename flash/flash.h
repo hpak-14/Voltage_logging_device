@@ -19,9 +19,11 @@ void Flash_Receive(uint8_t num_pin, uint32_t addr, uint8_t *rxbuf);
 void Flash_SectorErase(uint8_t num_pin, uint32_t addr);
 void flash_Init(void);
 void Memory_Interleaved_Fast(uint8_t *data_TX);
-
 void FLASH_CS_LOW(uint8_t num);
 void FLASH_CS_HIGH(uint8_t num);
+
+void Memory_Interleaved_Read_Init(void);
+uint8_t Memory_Interleaved_Read_Next(uint8_t *rxbuf);
 
 extern uint8_t CS_num;
 
@@ -29,18 +31,26 @@ extern GPIO_TypeDef* FLASH_CS_PORT[8];
 extern uint16_t      FLASH_CS_PIN[8];
 
 
-/* ������� SST26 */
+
 extern uint8_t cmd;
 
 #define CMD_READ            0x03
 #define CMD_FAST_READ       0x0B
 #define CMD_PAGE_PROGRAM    0x02
-#define CMD_SECTOR_ERASE    0x20 /* 4KB */
+#define CMD_SECTOR_ERASE    0x20 
 #define CMD_CHIP_ERASE      0xC7
 #define CMD_WRITE_ENABLE    0x06
 #define CMD_WRITE_DISABLE   0x04
 #define CMD_READ_STATUS     0x05
 #define CMD_READ_ID         0x9F
 #define CMD_Block_Protection_Unlock    0x98 
+
+
+typedef struct {
+    uint32_t total_pages;          // сколько страниц записано всего
+    uint8_t  last_chip;            // последний чип записи
+    uint32_t last_addr;             // последний адрес в чипе
+    uint8_t  buffer_wrapped;        // 1 = была перезапись
+} Flash_WriteMeta;
 
 

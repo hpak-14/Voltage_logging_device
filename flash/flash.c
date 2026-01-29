@@ -1,5 +1,10 @@
 #include <flash.h>
 
+Flash_WriteMeta flash_meta = {0};
+uint8_t  read_chip = 0;
+uint32_t read_addr = 0;
+uint32_t read_bytes_left = 0;
+
 uint8_t flag_mem = 0;
 uint8_t cmd = 0;
 uint8_t CS_num = 0;
@@ -55,9 +60,9 @@ void FLASH_CS_HIGH(uint8_t num) {
 void Flash_cmd(uint8_t cmd, uint8_t CS)
 {
   CS_num = CS;
-  delay(10);
+ // delay(10);
   FLASH_CS_LOW(CS);
-  delay(10);
+  //delay(10);
   HAL_SPI_Transmit_DMA(&hspi2, &cmd, 1);
  // while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY);
 
@@ -70,7 +75,7 @@ void Flash_Transmit(uint8_t num_pin, uint32_t addr, uint8_t *data_TX)
   uint8_t txbuf [1 + 3 + 256] = {0};
   CS_num = num_pin;
   Flash_cmd(CMD_WRITE_ENABLE, num_pin);
-  delay(10);
+ // delay(10);
   Flash_cmd(CMD_WRITE_ENABLE, num_pin );  
   txbuf[0] = CMD_PAGE_PROGRAM;
   txbuf[1] = (addr >> 16) & 0xFF;
@@ -78,7 +83,7 @@ void Flash_Transmit(uint8_t num_pin, uint32_t addr, uint8_t *data_TX)
   txbuf[3] = addr & 0xFF;
   memcpy(&txbuf[4], data_TX, 256);
   FLASH_CS_LOW(num_pin);
-  delay(10);
+  //delay(10);
   HAL_SPI_Transmit_DMA(&hspi2, txbuf, 260);
   //Flash_WaitBusy(num_pin);
 }
@@ -194,43 +199,102 @@ void flash_Init(void){
 
 }
 
-#define CHIP_SIZE  (8 * 1024 * 1024)  // 8 �� �� ���
+#define CHIP_SIZE  (8 * 1024 * 1024)  // 8 MB
 #define PAGE_SIZE 256
 #define SECTOR_SIZE 4096
 #define CHIPS_COUNT 8
 
-uint8_t current_chip = 0;                      // ������� �������� ���
-uint32_t chip_addresses[8] = {0};              // ������� ������ ��� ������� ����
-uint32_t sector_counters[8] = {0};             // �������� ���������� ���� � ������� �������
+uint8_t current_chip = 0;                      
+uint32_t chip_addresses[8] = {0};              
+uint32_t sector_counters[8] = {0};             
 
-void Memory_Interleaved_Fast(uint8_t *data_TX) {
-  
-    static uint8_t fast_cycle = 0;
-    static uint32_t last_write_time[8] = {0};
+void Memory_Interleaved_Fast(uint8_t *data_TX)
+{
     uint8_t target_chip = current_chip;
-    
-    //if (chip_addresses[target_chip] >= CHIP_SIZE) {
-    //current_chip = (current_chip + 1) % CHIPS_COUNT;
-    //return;
-    //}
+
+    /* зацикливание адреса */
     if (chip_addresses[target_chip] >= CHIP_SIZE) {
-    chip_addresses[target_chip] = 0;  // �������� � ������
+        chip_addresses[target_chip] = 0;
+        flash_meta.buffer_wrapped = 1;
     }
 
-    Flash_Transmit(target_chip, chip_addresses[target_chip], &data_TX[0]);
-    
-    // ��������� ���������
+    /* запись страницы */
+    Flash_Transmit(target_chip,
+                   chip_addresses[target_chip],
+                   data_TX);
+
+    /* обновление метаданных */
+    flash_meta.last_chip = target_chip;
+    flash_meta.last_addr = chip_addresses[target_chip];
+    flash_meta.total_pages++;
+
+    /* продвижение */
     chip_addresses[target_chip] += PAGE_SIZE;
     sector_counters[target_chip] += PAGE_SIZE;
-    
-    // ���� ������ ��������
+
+    /* стирание следующего сектора заранее */
     if (sector_counters[target_chip] >= SECTOR_SIZE) {
         sector_counters[target_chip] = 0;
-        // ������� ��������� ������ � ����
-        uint32_t next_sector = chip_addresses[target_chip] & 0xFFFFF000;
-        Flash_SectorErase(target_chip, next_sector);
+        Flash_SectorErase(
+            target_chip,
+            chip_addresses[target_chip] & 0xFFFFF000
+        );
     }
-    
-    // ��������� � ���������� ����
+
+    /* следующий чип */
     current_chip = (target_chip + 1) % CHIPS_COUNT;
+}
+
+uint32_t Flash_GetWrittenBytes(void)
+{
+    uint32_t max_pages =
+        (CHIP_SIZE / PAGE_SIZE) * CHIPS_COUNT;
+
+    if (flash_meta.buffer_wrapped) {
+        return max_pages * PAGE_SIZE;
+    }
+
+    return flash_meta.total_pages * PAGE_SIZE;
+}
+
+void Flash_GetReadStart(uint8_t *chip, uint32_t *addr)
+{
+    if (flash_meta.buffer_wrapped == 0) {
+        *chip = 0;
+        *addr = 0;
+        return;
+    }
+
+    /* начало самых старых данных */
+    *chip = (flash_meta.last_chip + 1) % CHIPS_COUNT;
+    *addr = flash_meta.last_addr + PAGE_SIZE;
+
+    if (*addr >= CHIP_SIZE) {
+        *addr = 0;
+    }
+}
+
+void Memory_Interleaved_Read_Init(void)
+{
+    Flash_GetReadStart(&read_chip, &read_addr);
+    read_bytes_left = Flash_GetWrittenBytes();
+}
+
+uint8_t Memory_Interleaved_Read_Next(uint8_t *rxbuf)
+{
+    if (read_bytes_left == 0) {
+        return 0;   // данных больше нет
+    }
+
+    Flash_Receive(read_chip, read_addr, rxbuf);
+
+    read_addr += PAGE_SIZE;
+    read_bytes_left -= PAGE_SIZE;
+
+    if (read_addr >= CHIP_SIZE) {
+        read_addr = 0;
+        read_chip = (read_chip + 1) % CHIPS_COUNT;
+    }
+
+    return 1;
 }

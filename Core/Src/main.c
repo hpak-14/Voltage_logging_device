@@ -131,13 +131,18 @@ static void MX_NVIC_Init(void);
     uint8_t ADC_data8[256] = {0};
     int16_t ADC_16[8] = {0};
     
+    uint8_t flash_dataRX[256] = {0};
+    
     extern uint8_t ADC_rx_data[19];
 
     uint8_t experement = 0;
     uint32_t SPI1_CR1 = 0;
     uint32_t cikl = 0;
     
-
+    float flash_MG1f = 0;
+    uint8_t flash_MG1 = 0;
+    uint8_t flash_MG1_masa[256] = {0};
+    uint16_t flash_MG1_count = 0;
 
 
 // ��� ���)
@@ -193,6 +198,8 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim6); // Запуск таймера с прерыванием
   ADS131E0_Init();
   Init_Modbus();
+  Memory_Interleaved_Read_Init();
+  Memory_Interleaved_Fast(&flash_MG1_masa[0]);
 
 
      
@@ -616,7 +623,7 @@ static void MX_GPIO_Init(void)
   {
       if (hspi == &hspi2)      
       {
-        delay(10);
+       // delay(10);
          FLASH_CS_HIGH(CS_num);
       }
   }
@@ -645,8 +652,14 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
       RMS_Sample(&ch[5], ADC_16[5]);
       RMS_Sample(&ch[6], ADC_16[6]);
       RMS_Sample(&ch[7], ADC_16[7]);
-
-
+      
+      flash_MG1f = (float)ADC_16[0] / 32767.0f * 4.096f * 1.1f * 1000.0f;
+      flash_MG1 = flash_MG1f;
+      
+      if (flash_MG1_count < 255){
+      flash_MG1_masa[flash_MG1_count] = flash_MG1;
+      flash_MG1_count++;
+      }
   }
 }
 
@@ -767,6 +780,14 @@ void Task_Flash_data(void *argument)
   /* Infinite loop */
   for(;;)
   {
+          if (flash_MG1_count >= 255){
+      Memory_Interleaved_Fast(&flash_MG1_masa[0]);
+      flash_MG1_count = 0;
+      }
+    if (experement){
+        Memory_Interleaved_Read_Next(flash_dataRX);
+        experement = 0;
+    }
     osDelay(1);
   }
   /* USER CODE END Task_Flash_data */
