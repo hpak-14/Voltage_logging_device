@@ -40,6 +40,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 /*calls the corresponding function according to the received function command*/
 void transmitDataMake(char *msg, uint8_t Lenght)
 {
+
+        if(Modbus_CheckIllegalDataAddress(msg)) return;
+        if(Modbus_CheckIllegalDataValue(msg)) return;
+          
 	switch(msg[1])
 	{
 	//case ReadCoil:
@@ -47,7 +51,11 @@ void transmitDataMake(char *msg, uint8_t Lenght)
 		//break;
 
 	case ReadHoldingRegister:
-		makePacket_03(msg, Lenght);
+		makePacket_03_04(msg, Lenght);
+		break;
+                
+        case ReadInputRegister:
+		makePacket_03_04(msg, Lenght);
 		break;
 
 	case WriteSingleRegister:
@@ -67,7 +75,7 @@ void transmitDataMake(char *msg, uint8_t Lenght)
 		//break;
                 
         default:
-                ILLEGAL_FUNCTION(msg, Lenght);
+                ILLEGAL_FUNCTION(msg);
         
 	}
         
@@ -175,7 +183,7 @@ void makePacket_01(char *msg, uint8_t Lenght)
 }
 
 /*Send register data*/
-void makePacket_03(char *msg, uint8_t Lenght)
+void makePacket_03_04(char *msg, uint8_t Lenght)
 {
 	uint8_t i, m = 0;
 
@@ -227,23 +235,6 @@ void makePacket_06(char *msg, uint8_t Lenght)
 	sendMessage(msg, Lenght);
 
 }
-
-
-  void ILLEGAL_FUNCTION(char *msg, uint8_t Lenght){
-
-    uint16_t crc;
-
-    ModbusTx[0] = msg[0];              // Slave Address
-    ModbusTx[1] = msg[1] | 0x80;       // Function + 0x80
-    ModbusTx[2] = 0x01;                // Illegal Function
-
-    crc = MODBUS_CRC16(ModbusTx, 3);
-    ModbusTx[3] = crc & 0xFF;
-    ModbusTx[4] = crc >> 8;
-
-    RS485_Send(ModbusTx, 5);
-}
-
 
 /*Write multiple coils*/
 void makePacket_15(char *msg, uint8_t Lenght)
@@ -374,5 +365,124 @@ void Init_Modbus(void){
     if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_8)  == GPIO_PIN_RESET) SLAVEID |= (1 << 3); // тумблер 4
     ModbusRegister[MB_add] = SLAVEID;
 
+}
+
+bool Modbus_CheckIllegalDataAddress(uint8_t *msg)
+{
+    uint16_t addr;
+    uint16_t qty;
+
+    switch (msg[1])   // Function code
+    {
+        // Read Holding Registers
+        case 0x03:
+            addr = (msg[2] << 8) | msg[3];
+            qty  = (msg[4] << 8) | msg[5];
+
+            if (qty == 0 ||
+                addr < HOLDING_START ||
+                (addr + qty - 1) >= (HOLDING_START + HOLDING_COUNT))
+            {
+                ILLEGAL_DATA_ADDRESS(msg);
+                return true;   // сразу выходим
+            }
+            break;
+
+        // Read Input Registers
+        case 0x04:
+            addr = (msg[2] << 8) | msg[3];
+            qty  = (msg[4] << 8) | msg[5];
+
+            if (qty == 0 ||
+                addr < INPUT_START ||
+                (addr + qty - 1) >= (INPUT_START + INPUT_COUNT))
+            {
+                ILLEGAL_DATA_ADDRESS(msg);
+                return true;
+            }
+            break;
+
+        // Write Single Register
+        case 0x06:
+            addr = (msg[2] << 8) | msg[3];
+
+            if (addr < HOLDING_START ||
+                addr >= (HOLDING_START + HOLDING_COUNT))
+            {
+                ILLEGAL_DATA_ADDRESS(msg);
+                return true;
+            }
+            break;
+    }
+    return false; 
+}
+
+bool Modbus_CheckIllegalDataValue(uint8_t *msg)
+{
+    uint16_t addr, value;
+
+    switch(msg[1])
+    {
+        case 0x06: // Write Single Register
+            addr  = (msg[2] << 8) | msg[3];
+            value = (msg[4] << 8) | msg[5];
+
+            // Проверка регистра MB_ADC_START
+            if(addr == MB_ADC_START)
+            {
+                if(value != 0 && value != 1)  // допустимые значения только 0 и 1
+                {
+                    ILLEGAL_DATA_VALUE(msg);
+                    return true; // ошибка
+                }
+            }
+            break;
+    }
+    return false; 
+}
+
+  void ILLEGAL_FUNCTION(uint8_t *msg){
+
+    uint16_t crc;
+
+    ModbusTx[0] = msg[0];              // Slave Address
+    ModbusTx[1] = msg[1] | 0x80;       // Function + 0x80
+    ModbusTx[2] = 0x01;                // Illegal Function
+
+    crc = MODBUS_CRC16(ModbusTx, 3);
+    ModbusTx[3] = crc & 0xFF;
+    ModbusTx[4] = crc >> 8;
+
+    RS485_Send(ModbusTx, 5);
+}
+
+void ILLEGAL_DATA_ADDRESS(uint8_t *msg)
+{
+    uint16_t crc;
+
+    ModbusTx[0] = msg[0];              // Slave Address
+    ModbusTx[1] = msg[1] | 0x80;       // Function + 0x80
+    ModbusTx[2] = 0x02;                // Illegal Data Address
+
+    crc = MODBUS_CRC16(ModbusTx, 3);
+    ModbusTx[3] = crc & 0xFF;          // CRC Low
+    ModbusTx[4] = crc >> 8;            // CRC High
+
+    RS485_Send(ModbusTx, 5);
+}
+
+void ILLEGAL_DATA_VALUE(uint8_t *msg)
+{
+    uint16_t crc;
+
+    ModbusTx[0] = msg[0];            // Slave ID
+    ModbusTx[1] = msg[1] | 0x80;     // Function + 0x80
+    ModbusTx[2] = 0x03;              // Illegal Data Value
+
+    crc = MODBUS_CRC16(ModbusTx, 3);
+    ModbusTx[3] = crc & 0xFF;
+    ModbusTx[4] = crc >> 8;
+
+    RS485_Send(ModbusTx, 5);
 }
 

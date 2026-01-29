@@ -10,6 +10,7 @@ enum ModbusFunctions
 {
 	ReadCoil = 0x01,
 	ReadHoldingRegister = 0x03,
+        ReadInputRegister = 0x04,
 	WriteSingleCoil = 0x05,
 	WriteSingleRegister = 0x06,
 	WriteMultipleCoils = 0x0F,
@@ -20,6 +21,10 @@ enum ModbusFunctions
 #define NUMBER_OF_REGISTER 100
 #define NUMBER_OF_COIL 100
 #define BUFFERSIZE (NUMBER_OF_REGISTER * 2 + 5)
+#define HOLDING_START     0x0000
+#define HOLDING_COUNT     100
+#define INPUT_START       0x0000
+#define INPUT_COUNT       100
 
 extern uint16_t ModbusRegister[NUMBER_OF_REGISTER];
 extern bool ModbusCoil[NUMBER_OF_COIL];
@@ -40,13 +45,17 @@ void transmitDataMake(char *msg, uint8_t Lenght);
 
 /* Modbus Functions */
 void makePacket_01(char *msg, uint8_t Lenght);
-void makePacket_03(char *msg, uint8_t Lenght);
+void makePacket_03_04(char *msg, uint8_t Lenght);
 void makePacket_05(char *msg, uint8_t Lenght);
 void makePacket_06(char *msg, uint8_t Lenght);
 void makePacket_15(char *msg, uint8_t Lenght);
 void makePacket_16(char *msg, uint8_t Lenght);
 
-void ILLEGAL_FUNCTION(char *msg, uint8_t Lenght);
+void ILLEGAL_FUNCTION(uint8_t *msg);
+void ILLEGAL_DATA_ADDRESS(uint8_t *msg);
+void ILLEGAL_DATA_VALUE(uint8_t *msg);
+bool  Modbus_CheckIllegalDataAddress(uint8_t *msg);
+bool Modbus_CheckIllegalDataValue(uint8_t *msg);
 
 void sendMessage(char *msg, uint8_t len);
 uint8_t findByte(int16_t NumberOfCoil);
@@ -93,34 +102,48 @@ void Init_Modbus(void);
 #define MB_LOG_ch 25
 
 // Объём памяти LOGа
-#define MB_LOG_SISE 26
+#define MB_LOG_SISE_1 26 //Не знаю в каком формате измеряется данная величина (В мегабайтах или в кол-ве доступных измеренний)
+#define MB_LOG_SISE_2 27
 
 // Заданный Адресс устройства
-#define MB_add 27
+#define MB_add 28
 
-// Описание устройства(ХЗ зачем, серега(Омск) сказал добавить)
-#define MB_info_device 28
+// Описание устройства(ХЗ что здесь должно быть)
+#define MB_info_device 29
+#define MB_info_device 30
+#define MB_info_device 31
+#define MB_info_device 32
 
-// ХЗ зачем, серега(Омск) сказал добавить
-#define MB_LOG_protocol_info 29
+// ХЗ зачем
+#define MB_LOG_protocol_info 33
+#define MB_LOG_protocol_info 34
+#define MB_LOG_protocol_info 35
+#define MB_LOG_protocol_info 36
+
+// Номер считываемой подзаписи в данный момент
+#define MB_LOG_read_number 37
+
+// Количество записей в логе
+#define MB_LOG_record 38
+
 
 // Ethernet config
-#define MB_Ethernet_conf_1  28
-#define MB_Ethernet_conf_2  29
-#define MB_Ethernet_conf_3  30
-#define MB_Ethernet_conf_4  31
-#define MB_Ethernet_conf_5  32
-#define MB_Ethernet_conf_6  33
-#define MB_Ethernet_conf_7  34
-#define MB_Ethernet_conf_8  35
-#define MB_Ethernet_conf_9  36
-#define MB_Ethernet_conf_10 37
-#define MB_Ethernet_conf_11 38
-#define MB_Ethernet_conf_12 39
-#define MB_Ethernet_conf_13 40
-#define MB_Ethernet_conf_14 41
-#define MB_Ethernet_conf_15 42
-#define MB_Ethernet_conf_16 43
+#define MB_Ethernet_conf_1  39
+#define MB_Ethernet_conf_2  40
+#define MB_Ethernet_conf_3  41
+#define MB_Ethernet_conf_4  42
+#define MB_Ethernet_conf_5  43
+#define MB_Ethernet_conf_6  44
+#define MB_Ethernet_conf_7  45
+#define MB_Ethernet_conf_8  46
+#define MB_Ethernet_conf_9  47
+#define MB_Ethernet_conf_10 48
+#define MB_Ethernet_conf_11 49
+#define MB_Ethernet_conf_12 50
+#define MB_Ethernet_conf_13 51
+#define MB_Ethernet_conf_14 52
+#define MB_Ethernet_conf_15 53
+#define MB_Ethernet_conf_16 54
 
 
 

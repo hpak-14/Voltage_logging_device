@@ -37,7 +37,7 @@
         <stlinkResetStrategy>2</stlinkResetStrategy>
     </StLinkDriver>
     <DebugChecksum>
-        <Checksum>628555640</Checksum>
+        <Checksum>2568149903</Checksum>
     </DebugChecksum>
     <Exceptions>
         <StopOnUncaught>_ 0</StopOnUncaught>
@@ -72,7 +72,7 @@
         <ITMlogFile>$PROJ_DIR$\ITM.log</ITMlogFile>
     </SWOTraceHWSettings>
     <array_types>
-        <Fmt0>char[205]	4	0</Fmt0>
+        <Fmt0>char[205]	5	0</Fmt0>
         <Fmt1>int16_t[256]	4	0</Fmt1>
         <Fmt2>int16_t[32000]	4	0</Fmt2>
         <Fmt3>int16_t[8]	3	0</Fmt3>
