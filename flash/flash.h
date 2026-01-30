@@ -22,8 +22,7 @@ void Memory_Interleaved_Fast(uint8_t *data_TX);
 void FLASH_CS_LOW(uint8_t num);
 void FLASH_CS_HIGH(uint8_t num);
 
-void Memory_Interleaved_Read_Init(void);
-uint8_t Memory_Interleaved_Read_Next(uint8_t *rxbuf);
+void Memory_Interleaved_Read(uint8_t *data_RX, uint32_t pages_to_read);
 
 extern uint8_t CS_num;
 

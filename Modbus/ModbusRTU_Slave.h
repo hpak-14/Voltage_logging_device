@@ -45,7 +45,8 @@ void transmitDataMake(uint8_t *msg, uint8_t Lenght);
 
 /* Modbus Functions */
 void makePacket_01(uint8_t *msg, uint8_t Lenght);
-void makePacket_03_04(uint8_t *msg, uint8_t Lenght);
+void makePacket_03(uint8_t *msg, uint8_t Lenght);
+void makePacket_04(uint8_t *msg, uint8_t Lenght); // Кастом
 void makePacket_05(uint8_t *msg, uint8_t Lenght);
 void makePacket_06(uint8_t *msg, uint8_t Lenght);
 void makePacket_15(uint8_t *msg, uint8_t Lenght);
@@ -62,7 +63,7 @@ uint8_t findByte(int16_t NumberOfCoil);
 uint16_t MODBUS_CRC16(uint8_t *buf, uint8_t len );
 void Init_Modbus(void);
 
-
+void modbus_flash(void);
 //*** Карта регистров Modbus ***//
 
 // Мгновенные значения
@@ -144,6 +145,9 @@ void Init_Modbus(void);
 #define MB_Ethernet_conf_14 52
 #define MB_Ethernet_conf_15 53
 #define MB_Ethernet_conf_16 54
+
+
+
 
 
 

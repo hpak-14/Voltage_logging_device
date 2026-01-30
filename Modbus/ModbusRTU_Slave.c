@@ -1,5 +1,6 @@
 #include <ModbusRTU_Slave.h>
 #include "main.h"
+#include <flash.h>
 extern void RS485_Send(uint8_t *data, uint16_t size);
 
 uint8_t uartRxData;
@@ -13,6 +14,11 @@ uint8_t SLAVEID = 0;
 uint8_t ModbusRx[BUFFERSIZE];
 uint8_t tempModbusRx[BUFFERSIZE];
 uint8_t ModbusTx[BUFFERSIZE];
+
+
+uint8_t read_page_buffer[256] = {0};
+uint32_t pages_to_read = 0;         // сколько страниц осталось
+uint8_t read_in_progress = 0;       // флаг чтения
 
 uint16_t rxCRC;
 
@@ -51,11 +57,11 @@ void transmitDataMake(uint8_t *msg, uint8_t Lenght)
 		//break;
 
 	case ReadHoldingRegister:
-		makePacket_03_04(msg, Lenght);
+		makePacket_03(msg, Lenght);
 		break;
                 
         case ReadInputRegister:
-		makePacket_03_04(msg, Lenght);
+		makePacket_04(msg, Lenght);
 		break;
 
 	case WriteSingleRegister:
@@ -183,7 +189,7 @@ void makePacket_01(uint8_t *msg, uint8_t Lenght)
 }
 
 /*Send register data*/
-void makePacket_03_04(uint8_t *msg, uint8_t Lenght)
+void makePacket_03(uint8_t *msg, uint8_t Lenght)
 {
 	uint8_t i, m = 0;
 
@@ -212,6 +218,27 @@ void makePacket_03_04(uint8_t *msg, uint8_t Lenght)
 	RS485_Send(ModbusTx, 5 + (NumberOfReg * 2 ));
 }
 
+
+void makePacket_04(uint8_t *msg, uint8_t Lenght){ // Кастом 
+    
+	uint16_t RegAddress = 0;
+        
+        RegAddress = (msg[2] << 8) | (msg[3]);
+	NumberOfReg = (msg[4] << 8) | (msg[5]);
+    
+     if (RegAddress == MB_M1 || pages_to_read < 128) {
+       
+       if (pages_to_read == 0){
+            Memory_Interleaved_Read(read_page_buffer, 1);
+            delay(500);
+       }
+        ModbusRegister[MB_M1] = (read_page_buffer[pages_to_read * 2] << 8) | read_page_buffer[pages_to_read * 2 + 1];
+        pages_to_read++;   
+        if (pages_to_read >= 128) pages_to_read = 0;
+     }
+     
+     makePacket_03(msg, Lenght);
+}
 /*Write single coil*/
 void makePacket_05(uint8_t *msg, uint8_t Lenght)
 {
