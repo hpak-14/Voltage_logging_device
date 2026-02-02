@@ -143,11 +143,13 @@ static void MX_NVIC_Init(void);
     uint8_t flash_MG1 = 0;
     uint8_t flash_MG1_masa[256] = {0};
     uint8_t ADC_flag = 0;
-    uint8_t flash_flag = 0;
     
     
-    uint8_t num_pin;
-    uint32_t addr123;
+    uint8_t data_TX_flash[2][256];
+
+    volatile uint8_t tx_write_idx = 0;   // куда пишем
+    volatile uint8_t tx_ready_idx = 0;   // какой буфер готов
+    volatile uint8_t flash_flag = 0;
 
 
 // ��� ���)
@@ -656,16 +658,21 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
       RMS_Sample(&ch[6], ADC_16[6]);
       RMS_Sample(&ch[7], ADC_16[7]);
       
-      if (ADC_flag < 128) { // 128 * 2 = 256 байт
-          flash_MG1_masa[ADC_flag * 2]     = ADC_rx_data[3];
-          flash_MG1_masa[ADC_flag * 2 + 1] = ADC_rx_data[4];
-          ADC_flag++;
-      }
-       
-      if (ADC_flag >= 128) {
-          memcpy(data_TX, flash_MG1_masa, 256);
-          flash_flag = 1;
-          ADC_flag = 0;
+      experement++;
+      if (experement >= 8){
+      if (ADC_flag < 128) {
+        data_TX_flash[tx_write_idx][ADC_flag * 2]     = ADC_rx_data[3];
+        data_TX_flash[tx_write_idx][ADC_flag * 2 + 1] = ADC_rx_data[4];
+        ADC_flag++;
+        }
+
+        if (ADC_flag >= 128) {
+            tx_ready_idx = tx_write_idx;   // запоминаем готовый буфер
+            tx_write_idx ^= 1;             // переключаемся на второй
+            ADC_flag = 0;
+            flash_flag = 1;
+        }
+      experement = 0;
       }
   }
 }
@@ -788,10 +795,10 @@ void Task_Flash_data(void *argument)
 
   for(;;)
   {
-    if(flash_flag){
-      Memory_Interleaved_Fast (&data_TX[0]);
-      flash_flag = 0;
-    }
+      if (flash_flag) {
+          Memory_Interleaved_Fast(data_TX_flash[tx_ready_idx]);
+          flash_flag = 0;
+      }
       osDelay(1);
   }
   /* USER CODE END Task_Flash_data */
