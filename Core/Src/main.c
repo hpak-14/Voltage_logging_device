@@ -658,8 +658,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
       RMS_Sample(&ch[6], ADC_16[6]);
       RMS_Sample(&ch[7], ADC_16[7]);
       
-      experement++;
-      if (experement >= 8){
+
       if (ADC_flag < 128) {
         data_TX_flash[tx_write_idx][ADC_flag * 2]     = ADC_rx_data[3];
         data_TX_flash[tx_write_idx][ADC_flag * 2 + 1] = ADC_rx_data[4];
@@ -672,8 +671,6 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
             ADC_flag = 0;
             flash_flag = 1;
         }
-      experement = 0;
-      }
   }
 }
 
