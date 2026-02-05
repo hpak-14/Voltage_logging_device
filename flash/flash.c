@@ -45,7 +45,7 @@ void Flash_cmd(uint8_t cmd, uint8_t CS)
 
 void Flash_Transmit(uint8_t num_pin, uint32_t addr, uint8_t *data_TX)
 {
-  uint8_t txbuf [1 + 3 + 256] = {0};
+  //txbuf [1 + 3 + 256] = {0};
   CS_num = num_pin;
   Flash_cmd(CMD_WRITE_ENABLE, num_pin);
  // delay(10);
@@ -58,7 +58,7 @@ void Flash_Transmit(uint8_t num_pin, uint32_t addr, uint8_t *data_TX)
   FLASH_CS_LOW(num_pin);
   delay(10);
   HAL_SPI_Transmit_DMA(&hspi2, txbuf, 260);
-  while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY);
+  //while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY);
 }
 
 

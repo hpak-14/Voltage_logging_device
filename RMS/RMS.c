@@ -32,7 +32,8 @@ void RMS_Sample(RMS_struct *Srms, int32_t ADC_d)
     Srms->win_idx++;
 
     if (++Srms->RMS_N >= Srms->RMS_samp) {
-
+      
+        
         Srms->DC_U  = Srms->DC_u;
         Srms->RMS_U = Srms->RMS_u;
 
@@ -61,6 +62,8 @@ void RMS_CalcResult(RMS_struct *Srms)
         Srms->RMS_flag = 0;
     }
 }
+
+
 RMS_struct ch[8];
 
 

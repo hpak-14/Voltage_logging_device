@@ -63,7 +63,7 @@ osThreadId_t ADC_dataHandle;
 const osThreadAttr_t ADC_data_attributes = {
   .name = "ADC_data",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
+  .priority = (osPriority_t) osPriorityLow,
 };
 /* Definitions for modbus */
 osThreadId_t modbusHandle;
@@ -72,26 +72,12 @@ const osThreadAttr_t modbus_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
-/* Definitions for ethernet */
-osThreadId_t ethernetHandle;
-const osThreadAttr_t ethernet_attributes = {
-  .name = "ethernet",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityLow,
-};
 /* Definitions for Flash */
 osThreadId_t FlashHandle;
 const osThreadAttr_t Flash_attributes = {
   .name = "Flash",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityLow,
-};
-/* Definitions for Diod */
-osThreadId_t DiodHandle;
-const osThreadAttr_t Diod_attributes = {
-  .name = "Diod",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 512 * 4,
+  .priority = (osPriority_t) osPriorityHigh,
 };
 /* Definitions for RMS */
 osThreadId_t RMSHandle;
@@ -99,6 +85,21 @@ const osThreadAttr_t RMS_attributes = {
   .name = "RMS",
   .stack_size = 2048 * 4,
   .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for flash */
+osSemaphoreId_t flashHandle;
+const osSemaphoreAttr_t flash_attributes = {
+  .name = "flash"
+};
+/* Definitions for ADC */
+osSemaphoreId_t ADCHandle;
+const osSemaphoreAttr_t ADC_attributes = {
+  .name = "ADC"
+};
+/* Definitions for RMS_adc */
+osSemaphoreId_t RMS_adcHandle;
+const osSemaphoreAttr_t RMS_adc_attributes = {
+  .name = "RMS_adc"
 };
 /* USER CODE BEGIN PV */
 
@@ -114,9 +115,7 @@ static void MX_SPI1_Init(void);
 static void MX_TIM6_Init(void);
 void Task_ADC_Data(void *argument);
 void Task_ModBus(void *argument);
-void Task_Ethernet(void *argument);
 void Task_Flash_data(void *argument);
-void Task_Diod(void *argument);
 void Task_RMS(void *argument);
 
 static void MX_NVIC_Init(void);
@@ -243,6 +242,16 @@ int main(void)
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
+  /* Create the semaphores(s) */
+  /* creation of flash */
+  flashHandle = osSemaphoreNew(1, 0, &flash_attributes);
+
+  /* creation of ADC */
+  ADCHandle = osSemaphoreNew(1, 0, &ADC_attributes);
+
+  /* creation of RMS_adc */
+  RMS_adcHandle = osSemaphoreNew(1, 1, &RMS_adc_attributes);
+
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
@@ -262,14 +271,8 @@ int main(void)
   /* creation of modbus */
   modbusHandle = osThreadNew(Task_ModBus, NULL, &modbus_attributes);
 
-  /* creation of ethernet */
-  ethernetHandle = osThreadNew(Task_Ethernet, NULL, &ethernet_attributes);
-
   /* creation of Flash */
   FlashHandle = osThreadNew(Task_Flash_data, NULL, &Flash_attributes);
-
-  /* creation of Diod */
-  DiodHandle = osThreadNew(Task_Diod, NULL, &Diod_attributes);
 
   /* creation of RMS */
   RMSHandle = osThreadNew(Task_RMS, NULL, &RMS_attributes);
@@ -645,8 +648,8 @@ static void MX_GPIO_Init(void)
       if (hspi == &hspi2)      
       {
         if(experement == 4)HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
-        //delay(10);
-          FLASH_CS_HIGH(CS_num);
+        delay(10);
+        FLASH_CS_HIGH(CS_num);
           
       }
   }
@@ -655,8 +658,8 @@ static void MX_GPIO_Init(void)
   {
       if (hspi == &hspi2)      
       {
-       // delay(10);
-         FLASH_CS_HIGH(CS_num);
+        delay(10);
+        FLASH_CS_HIGH(CS_num);
       }
   }
   
@@ -805,24 +808,6 @@ void Task_ModBus(void *argument)
   /* USER CODE END Task_ModBus */
 }
 
-/* USER CODE BEGIN Header_Task_Ethernet */
-/**
-* @brief Function implementing the ethernet thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_Task_Ethernet */
-void Task_Ethernet(void *argument)
-{
-  /* USER CODE BEGIN Task_Ethernet */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END Task_Ethernet */
-}
-
 /* USER CODE BEGIN Header_Task_Flash_data */
 /**
 * @brief Function implementing the Flash thread.
@@ -844,45 +829,6 @@ void Task_Flash_data(void *argument)
       osDelay(1);
   }
   /* USER CODE END Task_Flash_data */
-}
-
-/* USER CODE BEGIN Header_Task_Diod */
-/**
-* @brief Function implementing the Diod thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_Task_Diod */
-uint32_t pin_ex = 0;
-uint32_t add_ex = 0;
-uint8_t data_ex[256] = {0};
-
-void Task_Diod(void *argument)
-{
-  /* USER CODE BEGIN Task_Diod */
-  /* Infinite loop */
-  for(;;)
-  {
-          if (experement == 1) {
-          Flash_Transmit(0, 0, &flash_MG1_masa[0]);
-          experement = 0;
-      }
-      if (experement == 2) {
-          Flash_Receive(pin_ex, add_ex, &data_ex[0]);
-          experement = 0;
-      }
-       if (experement == 3) {
-          Flash_SectorErase(pin_ex, add_ex);
-          experement = 0;
-      }
-        if (experement == 4) {
-          flash_Init();
-          experement = 0;
-      }
-    
-    osDelay(1);
-  }
-  /* USER CODE END Task_Diod */
 }
 
 /* USER CODE BEGIN Header_Task_RMS */
@@ -934,8 +880,6 @@ void Task_RMS(void *argument)
   ModbusRegister[MB_DC6] = (uint16_t)(ch[5].RMS_DC * 1000.0f); // мВ
   ModbusRegister[MB_DC7] = (uint16_t)(ch[6].RMS_DC * 1000.0f); // мВ
   ModbusRegister[MB_DC8] = (uint16_t)(ch[7].RMS_DC * 1000.0f); // мВ
-  
-     
   
   osDelay(1);
   }
