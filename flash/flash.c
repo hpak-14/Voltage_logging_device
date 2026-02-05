@@ -83,7 +83,7 @@ void Flash_Receive(uint8_t num_pin, uint32_t addr, uint8_t *rxbuf){
 void Flash_SectorErase(uint8_t num_pin, uint32_t addr)
 {
   Flash_cmd(CMD_WRITE_ENABLE, num_pin);
-  delay(10);
+  //delay(10);
   uint8_t tx_buffer[4] = {
     CMD_SECTOR_ERASE,
     (addr >> 16) & 0xFF,
@@ -94,6 +94,7 @@ void Flash_SectorErase(uint8_t num_pin, uint32_t addr)
   FLASH_CS_LOW(num_pin);
   delay(10);
   HAL_SPI_Transmit_DMA(&hspi2, tx_buffer, 4);
+  while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY);
 }
  
 void Flash_ChipErase(uint8_t num_pin){
@@ -173,7 +174,7 @@ void flash_Init(void){
 
 }
 
-#define CHIP_SIZE  (8 * 1024 * 1024)  // 8 MB
+#define CHIP_SIZE  (8 * 1024 * 16)  // 8 MB
 #define PAGE_SIZE 256
 #define SECTOR_SIZE 4096
 #define CHIPS_COUNT 8
@@ -182,7 +183,8 @@ void flash_Init(void){
 uint8_t current_chip = 0;                      
 uint32_t chip_addresses[8] = {0};              
 uint32_t sector_counters[8] = {0}; 
-
+uint32_t erase_sector = 0;
+uint32_t erase_chip = 0;
 
 void Memory_Interleaved_Fast(uint8_t *data_TX)
 {
@@ -213,9 +215,9 @@ void Memory_Interleaved_Fast(uint8_t *data_TX)
         sector_counters[target_chip] = 0;
         
         uint32_t curr_sector  = chip_addresses[target_chip] & ~(SECTOR_SIZE - 1);
-        uint32_t erase_sector = curr_sector + ERASE_AHEAD * SECTOR_SIZE;
+        erase_sector = curr_sector + ERASE_AHEAD * SECTOR_SIZE;
         
-        uint32_t erase_chip = target_chip + 4;
+        erase_chip = target_chip + 4;
         
         if (erase_sector >= CHIP_SIZE)   erase_sector -= CHIP_SIZE;
         if (erase_chip   >= CHIPS_COUNT) erase_chip   -= CHIPS_COUNT;
