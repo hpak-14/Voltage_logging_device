@@ -31,13 +31,13 @@
     <StLinkDriver>
         <stlinkserialNo>066BFF535455886687122214</stlinkserialNo>
         <stlinkfoundProbes />
-        <LeaveTargetRunning>_ 0</LeaveTargetRunning>
-        <CStepIntDis>_ 0</CStepIntDis>
         <stlinkResetStyle>0</stlinkResetStyle>
         <stlinkResetStrategy>2</stlinkResetStrategy>
+        <LeaveTargetRunning>_ 0</LeaveTargetRunning>
+        <CStepIntDis>_ 0</CStepIntDis>
     </StLinkDriver>
     <DebugChecksum>
-        <Checksum>980432533</Checksum>
+        <Checksum>463457506</Checksum>
     </DebugChecksum>
     <Exceptions>
         <StopOnUncaught>_ 0</StopOnUncaught>
@@ -78,15 +78,17 @@
         <Fmt3>int16_t[8]	3	0</Fmt3>
         <Fmt4>int8_t[256]	3	0</Fmt4>
         <Fmt5>uint16_t[100]	3	0</Fmt5>
-        <Fmt6>uint8_t[19]	4	0</Fmt6>
-        <Fmt7>uint8_t[256]	3	0</Fmt7>
+        <Fmt6>uint32_t[8]	3	0</Fmt6>
+        <Fmt7>uint8_t[19]	4	0</Fmt7>
     </array_types>
     <watch_formats>
         <Fmt0>{W}42:ADC_16[0]	4	0</Fmt0>
-        <Fmt1>{W}42:data_TX_flash[0]	3	0</Fmt1>
-        <Fmt2>{W}42:experement	3	0</Fmt2>
-        <Fmt3>{W}42:len	4	0</Fmt3>
-        <Fmt4>{W}42:num_pin	3	0</Fmt4>
+        <Fmt1>{W}42:add_ex	3	0</Fmt1>
+        <Fmt2>{W}42:data_TX_flash[0]	3	0</Fmt2>
+        <Fmt3>{W}42:erase_addr	3	0</Fmt3>
+        <Fmt4>{W}42:experement	3	0</Fmt4>
+        <Fmt5>{W}42:len	4	0</Fmt5>
+        <Fmt6>{W}42:num_pin	3	0</Fmt6>
     </watch_formats>
     <Trace2>
         <Enabled>0</Enabled>
@@ -133,6 +135,13 @@
         <ShowTimeSum>1</ShowTimeSum>
         <SumSortOrder>0</SumSortOrder>
     </EventLog>
+    <DriverProfiling>
+        <Enabled>0</Enabled>
+        <Mode>3</Mode>
+        <Graph>0</Graph>
+        <Symbiont>0</Symbiont>
+        <Exclusions />
+    </DriverProfiling>
     <TermIOLog>
         <LoggingEnabled>_ 0</LoggingEnabled>
         <LogFile>_ ""</LogFile>
@@ -147,11 +156,4 @@
         <Count>0</Count>
         <SuppressDialog>0</SuppressDialog>
     </Aliases>
-    <DriverProfiling>
-        <Enabled>0</Enabled>
-        <Mode>3</Mode>
-        <Graph>0</Graph>
-        <Symbiont>0</Symbiont>
-        <Exclusions />
-    </DriverProfiling>
 </settings>

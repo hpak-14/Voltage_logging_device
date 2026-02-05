@@ -177,10 +177,12 @@ void flash_Init(void){
 #define PAGE_SIZE 256
 #define SECTOR_SIZE 4096
 #define CHIPS_COUNT 8
+#define ERASE_AHEAD   4
 
 uint8_t current_chip = 0;                      
 uint32_t chip_addresses[8] = {0};              
-uint32_t sector_counters[8] = {0};             
+uint32_t sector_counters[8] = {0}; 
+
 
 void Memory_Interleaved_Fast(uint8_t *data_TX)
 {
@@ -209,10 +211,18 @@ void Memory_Interleaved_Fast(uint8_t *data_TX)
     /* стирание следующего сектора заранее */
     if (sector_counters[target_chip] >= SECTOR_SIZE) {
         sector_counters[target_chip] = 0;
-        Flash_SectorErase(
-            target_chip,
-            chip_addresses[target_chip] & 0xFFFFF000
-        );
+        
+        uint32_t curr_sector  = chip_addresses[target_chip] & ~(SECTOR_SIZE - 1);
+        uint32_t erase_sector = curr_sector + ERASE_AHEAD * SECTOR_SIZE;
+        
+        uint32_t erase_chip = target_chip + 4;
+        
+        if (erase_sector >= CHIP_SIZE)   erase_sector -= CHIP_SIZE;
+        if (erase_chip   >= CHIPS_COUNT) erase_chip   -= CHIPS_COUNT;
+        
+        
+        Flash_SectorErase(erase_chip, erase_sector);
+        
     }
 
     /* следующий чип */
@@ -263,6 +273,6 @@ void Memory_Interleaved_Read(uint8_t *data_RX, uint32_t pages_to_read)
    //     sector_counters_read[chip] = 0;
    // }
     //current_chip_read = 0;
-    current_chip = target_chip;
+   // current_chip = target_chip;
 }
 
