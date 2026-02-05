@@ -226,15 +226,15 @@ void makePacket_04(uint8_t *msg, uint8_t Lenght){ // Кастом
         RegAddress = (msg[2] << 8) | (msg[3]);
 	NumberOfReg = (msg[4] << 8) | (msg[5]);
     
-     if (RegAddress == MB_M1 && pages_to_read < 128) {
+     if (RegAddress == MB_M1 && pages_to_read < 16 ) {
        
        if (pages_to_read == 0){
             Memory_Interleaved_Read(read_page_buffer, 1);
-            HAL_Delay(20);
+            HAL_Delay(10);
        }
-        ModbusRegister[MB_M1] = (read_page_buffer[pages_to_read * 2] << 8) | read_page_buffer[pages_to_read * 2 + 1];
+        ModbusRegister[MB_M1] = (read_page_buffer[pages_to_read * 16] << 8) | read_page_buffer[pages_to_read * 16 + 1];
         pages_to_read++;   
-        if (pages_to_read >= 128) pages_to_read = 0;
+        if (pages_to_read >= 16) pages_to_read = 0;
      }
      
      makePacket_03(msg, Lenght);

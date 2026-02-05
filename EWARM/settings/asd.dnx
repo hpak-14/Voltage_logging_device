@@ -37,7 +37,7 @@
         <stlinkfoundProbes />
     </StLinkDriver>
     <DebugChecksum>
-        <Checksum>4081851572</Checksum>
+        <Checksum>4164896249</Checksum>
     </DebugChecksum>
     <Exceptions>
         <StopOnThrow>_ 0</StopOnThrow>
@@ -77,7 +77,7 @@
         <Fmt2>int16_t[32000]	4	0</Fmt2>
         <Fmt3>int16_t[8]	3	0</Fmt3>
         <Fmt4>int8_t[256]	3	0</Fmt4>
-        <Fmt5>uint16_t[100]	3	0</Fmt5>
+        <Fmt5>uint16_t[100]	4	0</Fmt5>
         <Fmt6>uint32_t[8]	3	0</Fmt6>
         <Fmt7>uint8_t[19]	4	0</Fmt7>
     </array_types>

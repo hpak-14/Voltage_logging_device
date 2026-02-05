@@ -660,7 +660,7 @@ static void MX_GPIO_Init(void)
       }
   }
   
-
+uint32_t popa = 0;
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
   if(flag_ADC && hspi == &hspi1){
@@ -685,20 +685,36 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
       RMS_Sample(&ch[6], ADC_16[6]);
       RMS_Sample(&ch[7], ADC_16[7]);
       
-
-      if (ADC_flag < 128) {
-        data_TX_flash[tx_write_idx][ADC_flag * 2]     = ADC_rx_data[3];
-        data_TX_flash[tx_write_idx][ADC_flag * 2 + 1] = ADC_rx_data[4];
+      if(popa == 2){
+      if (ADC_flag < 16) {
+        data_TX_flash[tx_write_idx][ADC_flag * 16]     = ADC_rx_data[3];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 1] = ADC_rx_data[4];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 2]     = ADC_rx_data[5];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 3] = ADC_rx_data[6];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 4]     = ADC_rx_data[7];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 5] = ADC_rx_data[8];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 6]     = ADC_rx_data[9];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 7] = ADC_rx_data[10];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 8]     = ADC_rx_data[11];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 9] = ADC_rx_data[12];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 10]     = ADC_rx_data[13];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 11] = ADC_rx_data[14];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 12]     = ADC_rx_data[15];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 13] = ADC_rx_data[16];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 14]     = ADC_rx_data[17];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 15] = ADC_rx_data[18];
         ADC_flag++;
         }
 
-        if (ADC_flag >= 128) {
+        if (ADC_flag >= 16) {
             tx_ready_idx = tx_write_idx;   // запоминаем готовый буфер
             tx_write_idx ^= 1;             // переключаемся на второй
             ADC_flag = 0;
             flash_flag = 1;
         }
-      
+      popa =0;
+      }
+      popa++;
       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); 
   }
 }

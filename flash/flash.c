@@ -188,6 +188,7 @@ uint32_t erase_chip = 0;
 
 void Memory_Interleaved_Fast(uint8_t *data_TX)
 {
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
     uint8_t target_chip = current_chip;
 
     /* зацикливание адреса */
@@ -229,6 +230,7 @@ void Memory_Interleaved_Fast(uint8_t *data_TX)
 
     /* следующий чип */
     current_chip = (target_chip + 1) % CHIPS_COUNT;
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
 }
 
 
