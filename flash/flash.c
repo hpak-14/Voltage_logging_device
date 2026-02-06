@@ -14,6 +14,7 @@ uint32_t addr = 0x000000;
 uint8_t rxbuf [256] = {0};  
 uint8_t txbuf [256] = {0};  
 uint8_t data_TX [256] = {0};         
+uint32_t rx_flag = 0;
 
 uint8_t data_RX [256] = {0};
 // ����. CS                         0           1           2           3           4           5           6           7
@@ -45,10 +46,11 @@ void Flash_cmd(uint8_t cmd, uint8_t CS)
 
 void Flash_Transmit(uint8_t num_pin, uint32_t addr, uint8_t *data_TX)
 {
+  
   //txbuf [1 + 3 + 256] = {0};
   CS_num = num_pin;
   Flash_cmd(CMD_WRITE_ENABLE, num_pin);
- // delay(10);
+  delay(10);
   Flash_cmd(CMD_WRITE_ENABLE, num_pin );  
   txbuf[0] = CMD_PAGE_PROGRAM;
   txbuf[1] = (addr >> 16) & 0xFF;
@@ -65,16 +67,14 @@ void Flash_Transmit(uint8_t num_pin, uint32_t addr, uint8_t *data_TX)
 void Flash_Receive(uint8_t num_pin, uint32_t addr, uint8_t *rxbuf){
   
   CS_num = num_pin;
-  uint8_t tx_buffer[4] = {
-    CMD_READ,           
-    (addr >> 16) & 0xFF,
-    (addr >> 8) & 0xFF, 
-    addr & 0xFF
-  };
+  txbuf[0] = CMD_READ;          
+  txbuf[1] =  (addr >> 16) & 0xFF;
+  txbuf[2] = (addr >> 8) & 0xFF;
+  txbuf[3] =  addr & 0xFF;
   
   FLASH_CS_LOW(num_pin);
   delay(10);
-  HAL_SPI_Transmit(&hspi2, tx_buffer, 4, 1000);
+  HAL_SPI_Transmit(&hspi2, txbuf, 4,10);
   HAL_SPI_Receive_DMA(&hspi2, rxbuf, 256);
   while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY);
 }
@@ -84,17 +84,15 @@ void Flash_SectorErase(uint8_t num_pin, uint32_t addr)
 {
   Flash_cmd(CMD_WRITE_ENABLE, num_pin);
   //delay(10);
-  uint8_t tx_buffer[4] = {
-    CMD_SECTOR_ERASE,
-    (addr >> 16) & 0xFF,
-    (addr >> 8) & 0xFF,
-    addr & 0xFF
-  };
-  
+
+  txbuf[0] = CMD_SECTOR_ERASE;
+  txbuf[1] =(addr >> 16) & 0xFF;
+  txbuf[2] =(addr >> 8) & 0xFF;
+  txbuf[3] = addr & 0xFF;
+
   FLASH_CS_LOW(num_pin);
   delay(10);
-  HAL_SPI_Transmit_DMA(&hspi2, tx_buffer, 4);
-  while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY);
+  HAL_SPI_Transmit_DMA(&hspi2, txbuf, 4);
 }
  
 void Flash_ChipErase(uint8_t num_pin){
@@ -188,7 +186,6 @@ uint32_t erase_chip = 0;
 
 void Memory_Interleaved_Fast(uint8_t *data_TX)
 {
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
     uint8_t target_chip = current_chip;
 
     /* зацикливание адреса */
@@ -230,7 +227,6 @@ void Memory_Interleaved_Fast(uint8_t *data_TX)
 
     /* следующий чип */
     current_chip = (target_chip + 1) % CHIPS_COUNT;
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
 }
 
 
@@ -270,7 +266,7 @@ void Memory_Interleaved_Read(uint8_t *data_RX, uint32_t pages_to_read)
 
     // Обновляем текущий чип
     current_chip_read = target_chip;
-
+  
     // Сброс всех адресов и счетчиков после завершения чтения
    // for (uint8_t chip = 0; chip < CHIPS_COUNT; chip++) {
     //    chip_addresses_read[chip] = 0;

@@ -8,6 +8,7 @@ extern uint8_t rxbuf [256];//
 extern uint8_t txbuf [256];//
 extern uint8_t data_TX [256];
 extern uint8_t flag_mem;
+extern uint32_t rx_flag;
 extern void delay(uint32_t tik);
 void Flash_ChipErase(uint8_t num_pin);
 void Memory(uint8_t *data_TX);

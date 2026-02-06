@@ -644,14 +644,12 @@ static void MX_GPIO_Init(void)
 
 
  void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
-  {
+  {      
       if (hspi == &hspi2)      
       {
-        if(experement == 4)HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
         delay(10);
         FLASH_CS_HIGH(CS_num);
-          
-      }
+      }   
   }
 
   void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
@@ -666,8 +664,9 @@ static void MX_GPIO_Init(void)
 uint32_t popa = 0;
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
+          HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
   if(flag_ADC && hspi == &hspi1){
-      
+    
       ADC_CS_HIGH;
    
       ADC_16[0] = (int16_t)(((uint16_t)ADC_rx_data[3]  << 8) | ADC_rx_data[4]);   // CH1
@@ -688,7 +687,6 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
       RMS_Sample(&ch[6], ADC_16[6]);
       RMS_Sample(&ch[7], ADC_16[7]);
       
-      if(popa == 2){
       if (ADC_flag < 16) {
         data_TX_flash[tx_write_idx][ADC_flag * 16]     = ADC_rx_data[3];
         data_TX_flash[tx_write_idx][ADC_flag * 16 + 1] = ADC_rx_data[4];
@@ -709,16 +707,13 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
         ADC_flag++;
         }
 
-        if (ADC_flag >= 16) {
+        if (ADC_flag >= 16) { 
             tx_ready_idx = tx_write_idx;   // запоминаем готовый буфер
             tx_write_idx ^= 1;             // переключаемся на второй
             ADC_flag = 0;
             flash_flag = 1;
         }
-      popa =0;
-      }
-      popa++;
-      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); 
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); 
   }
 }
 
