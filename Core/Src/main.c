@@ -225,13 +225,13 @@ int main(void)
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
   
-  flash_Init();
+  
   HAL_TIM_Base_Start_IT(&htim6); // Запуск таймера с прерыванием
   ADS131E0_Init();
   Init_Modbus();
 
 
-     
+  flash_Init();
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -691,6 +691,14 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
       RMS_Sample(&ch[6], ADC_16[6]);
       RMS_Sample(&ch[7], ADC_16[7]);
       */
+      
+      if(erase_flag){
+          Flash_SectorErase(erase_chip, erase_sector);
+          while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY);
+          erase_flag = 0;
+      }
+      
+      if(popa == 8){
           if (ADC_flag < 16) {
         data_TX_flash[tx_write_idx][ADC_flag * 16]     = ADC_rx_data[3];
         data_TX_flash[tx_write_idx][ADC_flag * 16 + 1] = ADC_rx_data[4];
@@ -720,7 +728,9 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
                 ADC_flag = 0;
                // flash_flag = 1;       
             }
-         
+      popa = 0;
+      }
+      popa++;
       }
 
     }
@@ -819,10 +829,7 @@ void Task_Flash_data(void *argument)
 
   for(;;)
   {
-   //   if (flash_flag) {
 
-      //    flash_flag = 0;
-     // }
       osDelay(1);
   }
   /* USER CODE END Task_Flash_data */
