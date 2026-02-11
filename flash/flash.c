@@ -180,6 +180,7 @@ uint32_t chip_addresses[8] = {0};
 uint32_t sector_counters[8] = {0}; 
 uint32_t erase_sector = 0;
 uint32_t erase_chip = 0;
+uint32_t erase_flag = 0;
 
 void Memory_Interleaved_Fast(uint8_t *data_TX)
 {
@@ -203,7 +204,7 @@ void Memory_Interleaved_Fast(uint8_t *data_TX)
     chip_addresses[target_chip] += PAGE_SIZE;
     sector_counters[target_chip] += PAGE_SIZE;
 
-    /* стирание следующего сектора заранее *//*
+    /* стирание следующего сектора заранее */
     if (sector_counters[target_chip] >= SECTOR_SIZE) {
         sector_counters[target_chip] = 0;
         
@@ -215,11 +216,10 @@ void Memory_Interleaved_Fast(uint8_t *data_TX)
         if (erase_sector >= CHIP_SIZE)   erase_sector -= CHIP_SIZE;
         if (erase_chip   >= CHIPS_COUNT) erase_chip   -= CHIPS_COUNT;
         
-        
         Flash_SectorErase(erase_chip, erase_sector);
-        
+        //erase_flag = 1;
     }
-    */
+    
     /* следующий чип */
     current_chip = (target_chip + 1) % CHIPS_COUNT;
 }

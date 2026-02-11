@@ -29,8 +29,9 @@ extern uint8_t CS_num;
 
 extern GPIO_TypeDef* FLASH_CS_PORT[8];
 extern uint16_t      FLASH_CS_PIN[8];
-
-
+extern uint32_t erase_flag;
+extern uint32_t erase_chip;
+extern uint32_t erase_sector;
 
 extern uint8_t cmd;
 
