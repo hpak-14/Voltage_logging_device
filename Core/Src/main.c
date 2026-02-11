@@ -77,7 +77,7 @@ osThreadId_t FlashHandle;
 const osThreadAttr_t Flash_attributes = {
   .name = "Flash",
   .stack_size = 512 * 4,
-  .priority = (osPriority_t) osPriorityHigh,
+  .priority = (osPriority_t) osPriorityLow,
 };
 /* Definitions for RMS */
 osThreadId_t RMSHandle;
@@ -355,7 +355,7 @@ void SystemClock_Config(void)
 static void MX_NVIC_Init(void)
 {
   /* EXTI2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(EXTI2_IRQn, 6, 0);
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 7, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
 }
 
@@ -519,16 +519,16 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA1_Stream3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 7, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream3_IRQn);
   /* DMA1_Stream4_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 7, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);
   /* DMA2_Stream0_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 6, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
   /* DMA2_Stream3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 6, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
 
 }
@@ -664,11 +664,11 @@ static void MX_GPIO_Init(void)
 uint32_t popa = 0;
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
-          HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
-  if(flag_ADC && hspi == &hspi1){
-    
-      ADC_CS_HIGH;
-   
+  if (hspi == &hspi1){
+      if(flag_ADC && hspi == &hspi1){
+          delay(10);
+          ADC_CS_HIGH;
+
       ADC_16[0] = (int16_t)(((uint16_t)ADC_rx_data[3]  << 8) | ADC_rx_data[4]);   // CH1
       ADC_16[1] = (int16_t)(((uint16_t)ADC_rx_data[5]  << 8) | ADC_rx_data[6]);   // CH2
       ADC_16[2] = (int16_t)(((uint16_t)ADC_rx_data[7]  << 8) | ADC_rx_data[8]);   // CH3
@@ -687,7 +687,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
       RMS_Sample(&ch[6], ADC_16[6]);
       RMS_Sample(&ch[7], ADC_16[7]);
       
-      if (ADC_flag < 16) {
+          if (ADC_flag < 16) {
         data_TX_flash[tx_write_idx][ADC_flag * 16]     = ADC_rx_data[3];
         data_TX_flash[tx_write_idx][ADC_flag * 16 + 1] = ADC_rx_data[4];
         data_TX_flash[tx_write_idx][ADC_flag * 16 + 2]     = ADC_rx_data[5];
@@ -704,17 +704,22 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
         data_TX_flash[tx_write_idx][ADC_flag * 16 + 13] = ADC_rx_data[16];
         data_TX_flash[tx_write_idx][ADC_flag * 16 + 14]     = ADC_rx_data[17];
         data_TX_flash[tx_write_idx][ADC_flag * 16 + 15] = ADC_rx_data[18];
-        ADC_flag++;
-        }
+              ADC_flag++;
+            }
 
-        if (ADC_flag >= 16) { 
-            tx_ready_idx = tx_write_idx;   // запоминаем готовый буфер
-            tx_write_idx ^= 1;             // переключаемся на второй
-            ADC_flag = 0;
-            flash_flag = 1;
-        }
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); 
-  }
+            if (ADC_flag >= 16) { 
+                HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+                Memory_Interleaved_Fast(data_TX_flash[tx_ready_idx]);
+                HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
+                tx_ready_idx = tx_write_idx;   // запоминаем готовый буфер
+                tx_write_idx ^= 1;             // переключаемся на второй
+                ADC_flag = 0;
+               // flash_flag = 1;       
+            }
+         
+      }
+
+    }
 }
 
 
@@ -723,19 +728,14 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
     if(huart->Instance == UART4)
     {
-        // Небольшая задержка
-        volatile uint32_t delay = 10;
-        while(delay--);
-        
-        // Переключаемся в режим приема
+        delay(5);
         HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET); 
     }
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
- HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); 
- delay(4);
- ADS131E0_DataRead();
+    delay(4);
+    ADS131E0_DataRead();
 }
 
 
@@ -817,10 +817,10 @@ void Task_Flash_data(void *argument)
 
   for(;;)
   {
-      if (flash_flag) {
-          Memory_Interleaved_Fast(data_TX_flash[tx_ready_idx]);
-          flash_flag = 0;
-      }
+   //   if (flash_flag) {
+
+      //    flash_flag = 0;
+     // }
       osDelay(1);
   }
   /* USER CODE END Task_Flash_data */
@@ -849,14 +849,14 @@ void Task_RMS(void *argument)
   RMS_CalcResult(&ch[6]);
   RMS_CalcResult(&ch[7]);
   
-  ModbusRegister[MB_M1]   = (uint16_t)(ch[0].RMS_MG); // мВ
-  ModbusRegister[MB_M2]   = (uint16_t)(ch[1].RMS_MG); // мВ
-  ModbusRegister[MB_M3]   = (uint16_t)(ch[2].RMS_MG); // мВ
-  ModbusRegister[MB_M4]   = (uint16_t)(ch[3].RMS_MG); // мВ
-  ModbusRegister[MB_M5]   = (uint16_t)(ch[4].RMS_MG); // мВ
-  ModbusRegister[MB_M6]   = (uint16_t)(ch[5].RMS_MG); // мВ
-  ModbusRegister[MB_M7]   = (uint16_t)(ch[6].RMS_MG); // мВ
-  ModbusRegister[MB_M8]   = (uint16_t)(ch[7].RMS_MG); // мВ
+  //ModbusRegister[MB_M1]   = (uint16_t)(ch[0].RMS_MG); // мВ
+  //ModbusRegister[MB_M2]   = (uint16_t)(ch[1].RMS_MG); // мВ
+  //ModbusRegister[MB_M3]   = (uint16_t)(ch[2].RMS_MG); // мВ
+  //ModbusRegister[MB_M4]   = (uint16_t)(ch[3].RMS_MG); // мВ
+  //ModbusRegister[MB_M5]   = (uint16_t)(ch[4].RMS_MG); // мВ
+  //ModbusRegister[MB_M6]   = (uint16_t)(ch[5].RMS_MG); // мВ
+  //ModbusRegister[MB_M7]   = (uint16_t)(ch[6].RMS_MG); // мВ
+  //ModbusRegister[MB_M8]   = (uint16_t)(ch[7].RMS_MG); // мВ
   
   ModbusRegister[MB_RMS1] = (uint16_t)(ch[0].RMS_AC * 1000.0f); // мВ
   ModbusRegister[MB_RMS2] = (uint16_t)(ch[1].RMS_AC * 1000.0f); // мВ
