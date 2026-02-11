@@ -12,8 +12,7 @@ uint32_t DMA_TX_Finish = 0;
 uint8_t DMA_RX_Finish = 0;
 uint32_t addr = 0x000000;
 uint8_t rxbuf [256] = {0};  
-uint8_t txbuf [256] = {0};  
-uint8_t data_TX [256] = {0};         
+uint8_t txbuf [256] = {0};      
 uint32_t rx_flag = 0;
 
 uint8_t data_RX [256] = {0};
@@ -51,7 +50,6 @@ void Flash_Transmit(uint8_t num_pin, uint32_t addr, uint8_t *data_TX)
   CS_num = num_pin;
   Flash_cmd(CMD_WRITE_ENABLE, num_pin);
   delay(10);
-  Flash_cmd(CMD_WRITE_ENABLE, num_pin );  
   txbuf[0] = CMD_PAGE_PROGRAM;
   txbuf[1] = (addr >> 16) & 0xFF;
   txbuf[2] = (addr >> 8) & 0xFF;
@@ -60,7 +58,6 @@ void Flash_Transmit(uint8_t num_pin, uint32_t addr, uint8_t *data_TX)
   FLASH_CS_LOW(num_pin);
   delay(10);
   HAL_SPI_Transmit_DMA(&hspi2, txbuf, 260);
-  //while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY);
 }
 
 
@@ -183,6 +180,7 @@ uint32_t chip_addresses[8] = {0};
 uint32_t sector_counters[8] = {0}; 
 uint32_t erase_sector = 0;
 uint32_t erase_chip = 0;
+uint32_t erase_flag = 0;
 
 void Memory_Interleaved_Fast(uint8_t *data_TX)
 {
@@ -195,9 +193,7 @@ void Memory_Interleaved_Fast(uint8_t *data_TX)
     }
 
     /* запись страницы */
-    Flash_Transmit(target_chip,
-                   chip_addresses[target_chip],
-                   data_TX);
+    Flash_Transmit(target_chip, chip_addresses[target_chip], data_TX);
 
     /* обновление метаданных */
     flash_meta.last_chip = target_chip;
@@ -220,11 +216,10 @@ void Memory_Interleaved_Fast(uint8_t *data_TX)
         if (erase_sector >= CHIP_SIZE)   erase_sector -= CHIP_SIZE;
         if (erase_chip   >= CHIPS_COUNT) erase_chip   -= CHIPS_COUNT;
         
-        
         Flash_SectorErase(erase_chip, erase_sector);
-        
+        //erase_flag = 1;
     }
-
+    
     /* следующий чип */
     current_chip = (target_chip + 1) % CHIPS_COUNT;
 }
