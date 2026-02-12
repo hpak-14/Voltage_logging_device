@@ -718,16 +718,19 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
         data_TX_flash[tx_write_idx][ADC_flag * 16 + 15] = ADC_rx_data[18];
               ADC_flag++;
             }
-
+          if(erase_flag == 1){
+              Flash_SectorErase(erase_chip, erase_sector);
+              erase_flag = 0;
+          }
             if (ADC_flag >= 16) { 
                 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
                 Memory_Interleaved_Fast(data_TX_flash[tx_ready_idx]);
                 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
                 tx_ready_idx = tx_write_idx;   // запоминаем готовый буфер
                 tx_write_idx ^= 1;             // переключаемся на второй
-                ADC_flag = 0;
-               // flash_flag = 1;       
+                ADC_flag = 0;    
             }
+          
       popa = 0;
       }
       popa++;
@@ -822,6 +825,8 @@ void Task_ModBus(void *argument)
 * @retval None
 */
 /* USER CODE END Header_Task_Flash_data */
+uint8_t bubba_tx[256] = {1, 54, 213, 64 ,145 , 13};
+uint8_t bubba_rx[256] = {0};
 void Task_Flash_data(void *argument)
 {
   /* USER CODE BEGIN Task_Flash_data */
@@ -829,7 +834,20 @@ void Task_Flash_data(void *argument)
 
   for(;;)
   {
-
+    if(experement == 1){
+    Flash_Receive(popa,256, &bubba_rx[0]);
+      experement = 0;
+    }
+    
+    if(experement == 2){
+    Flash_Transmit(popa,256, &bubba_tx[0]);
+      experement = 0;
+    }
+    
+        if(experement == 3){
+    Flash_SectorErase(popa,256);
+      experement = 0;
+    }
       osDelay(1);
   }
   /* USER CODE END Task_Flash_data */

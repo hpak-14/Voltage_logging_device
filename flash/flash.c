@@ -94,8 +94,9 @@ void Flash_SectorErase(uint8_t num_pin, uint32_t addr)
  
 void Flash_ChipErase(uint8_t num_pin){
   Flash_cmd(CMD_WRITE_ENABLE, num_pin);
-  delay(10);
+  HAL_Delay(10);
   Flash_cmd(CMD_CHIP_ERASE, num_pin);
+  HAL_Delay(10);
   //Flash_WaitBusy(num_pin);
 }
 
@@ -152,19 +153,28 @@ void Memory_test(void){
   HAL_SPI_Receive_DMA(&hspi2, &rxbuf[0], 2560);
   while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY);
 }
-
+extern uint8_t bubba_rx[256];
 void flash_Init(void){
   
     for (uint8_t CS = 0; CS < 8; CS++) {
-
+        
+        Flash_cmd(0x66, CS);
+        HAL_Delay(10);
+        
+        Flash_cmd(0x99, CS);
+        HAL_Delay(10);
+        
         Flash_cmd(CMD_WRITE_ENABLE, CS);
-        delay(10);
+        HAL_Delay(10);
 
         Flash_cmd(CMD_Block_Protection_Unlock, CS);
-        delay(10);
+        HAL_Delay(50);
         
         Flash_ChipErase(CS);
-        delay(10);
+        HAL_Delay(50);
+        
+        SST26_ReadBlockProtection(&bubba_rx[0], CS);
+        HAL_Delay(5);
     }
 
 }
@@ -216,8 +226,8 @@ void Memory_Interleaved_Fast(uint8_t *data_TX)
         if (erase_sector >= CHIP_SIZE)   erase_sector -= CHIP_SIZE;
         if (erase_chip   >= CHIPS_COUNT) erase_chip   -= CHIPS_COUNT;
         
-        Flash_SectorErase(erase_chip, erase_sector);
-        //erase_flag = 1;
+        //Flash_SectorErase(erase_chip, erase_sector);
+        erase_flag = 1;
     }
     
     /* следующий чип */
@@ -271,3 +281,15 @@ void Memory_Interleaved_Read(uint8_t *data_RX, uint32_t pages_to_read)
    // current_chip = target_chip;
 }
 
+
+void SST26_ReadBlockProtection(uint8_t *buffer, uint8_t num_pin)
+{
+    FLASH_CS_LOW(num_pin);
+    HAL_Delay(1);
+    uint8_t cmd = 0x72;
+    HAL_SPI_Transmit(&hspi2, &cmd, 1, HAL_MAX_DELAY);
+    // SPI mode: dummy cycle не требуется, данные сразу
+    HAL_SPI_Receive(&hspi2, buffer, 18, HAL_MAX_DELAY); // 144 бита = 18 байт
+    HAL_Delay(1);
+    FLASH_CS_HIGH(num_pin);
+}

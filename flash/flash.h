@@ -24,7 +24,7 @@ void FLASH_CS_LOW(uint8_t num);
 void FLASH_CS_HIGH(uint8_t num);
 
 void Memory_Interleaved_Read(uint8_t *data_RX, uint32_t pages_to_read);
-
+void SST26_ReadBlockProtection(uint8_t *buffer, uint8_t num_pin);
 extern uint8_t CS_num;
 
 extern GPIO_TypeDef* FLASH_CS_PORT[8];
