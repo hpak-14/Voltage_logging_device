@@ -192,7 +192,7 @@ uint32_t erase_sector = 0;
 uint32_t erase_chip = 0;
 uint32_t erase_flag = 0;
 
-void Memory_Interleaved_Fast(uint8_t *data_TX)
+void Memory_Write(uint8_t *data_TX)
 {
     uint8_t target_chip = current_chip;
 
@@ -240,7 +240,7 @@ uint8_t current_chip_read = 0;
 uint32_t chip_addresses_read[8] = {0};              
 uint32_t sector_counters_read[8] = {0};   
 
-void Memory_Interleaved_Read(uint8_t *data_RX, uint32_t pages_to_read)
+void Memory_Read(uint8_t *data_RX, uint32_t pages_to_read)
 {
     uint8_t target_chip = current_chip_read;
 

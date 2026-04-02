@@ -724,7 +724,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
           }
             if (ADC_flag >= 16) { 
                 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
-                Memory_Interleaved_Fast(data_TX_flash[tx_ready_idx]);
+                Memory_Write(data_TX_flash[tx_ready_idx]);
                 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
                 tx_ready_idx = tx_write_idx;   // запоминаем готовый буфер
                 tx_write_idx ^= 1;             // переключаемся на второй
