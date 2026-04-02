@@ -76,7 +76,7 @@ osThreadId_t FlashHandle;
 const osThreadAttr_t Flash_attributes = {
   .name = "Flash",
   .stack_size = 512 * 4,
-  .priority = (osPriority_t) osPriorityLow,
+  .priority = (osPriority_t) osPriorityRealtime7,
 };
 /* Definitions for RMS */
 osThreadId_t RMSHandle;
@@ -229,6 +229,10 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim6); // Запуск таймера с прерыванием
   ADS131E0_Init();
   Init_Modbus();
+  
+  EXTI -> IMR |= 0x0060;    
+  NVIC_SetPriority(EXTI9_5_IRQn, 8);      // Низкий приоритет  
+  NVIC_EnableIRQ(EXTI9_5_IRQn);
 
 
   flash_Init();
@@ -665,22 +669,23 @@ static void MX_GPIO_Init(void)
       }
   }
   
-uint32_t popa = 0;
+uint32_t FlashW = 0;
+uint8_t  FlashW_b[256] = {0};
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
   if (hspi == &hspi1){
       if(flag_ADC && hspi == &hspi1){
-          delay(10);
+          delay(4);
           ADC_CS_HIGH;
       
       ADC_16[0] = (int16_t)(((uint16_t)ADC_rx_data[3]  << 8) | ADC_rx_data[4]);   // CH1
       ADC_16[1] = (int16_t)(((uint16_t)ADC_rx_data[5]  << 8) | ADC_rx_data[6]);   // CH2
-      ADC_16[2] = (int16_t)(((uint16_t)ADC_rx_data[7]  << 8) | ADC_rx_data[8]);   // CH3
-      ADC_16[3] = (int16_t)(((uint16_t)ADC_rx_data[9]  << 8) | ADC_rx_data[10]);  // CH4
-      ADC_16[4] = (int16_t)(((uint16_t)ADC_rx_data[11] << 8) | ADC_rx_data[12]);  // CH5
-      ADC_16[5] = (int16_t)(((uint16_t)ADC_rx_data[13] << 8) | ADC_rx_data[14]);  // CH6
-      ADC_16[6] = (int16_t)(((uint16_t)ADC_rx_data[15] << 8) | ADC_rx_data[16]);  // CH7
-      ADC_16[7] = (int16_t)(((uint16_t)ADC_rx_data[17] << 8) | ADC_rx_data[18]);  // CH8
+      //ADC_16[2] = (int16_t)(((uint16_t)ADC_rx_data[7]  << 8) | ADC_rx_data[8]);   // CH3
+      //ADC_16[3] = (int16_t)(((uint16_t)ADC_rx_data[9]  << 8) | ADC_rx_data[10]);  // CH4
+      //ADC_16[4] = (int16_t)(((uint16_t)ADC_rx_data[11] << 8) | ADC_rx_data[12]);  // CH5
+      //ADC_16[5] = (int16_t)(((uint16_t)ADC_rx_data[13] << 8) | ADC_rx_data[14]);  // CH6
+      //ADC_16[6] = (int16_t)(((uint16_t)ADC_rx_data[15] << 8) | ADC_rx_data[16]);  // CH7
+      //ADC_16[7] = (int16_t)(((uint16_t)ADC_rx_data[17] << 8) | ADC_rx_data[18]);  // CH8
       /*
       RMS_Sample(&ch[0], ADC_16[0]);
       RMS_Sample(&ch[1], ADC_16[1]);
@@ -692,30 +697,10 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
       RMS_Sample(&ch[7], ADC_16[7]);
       */
       
-      if(erase_flag){
-          Flash_SectorErase(erase_chip, erase_sector);
-          while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY);
-          erase_flag = 0;
-      }
+
       
-      if(popa == 8){
           if (ADC_flag < 16) {
-        data_TX_flash[tx_write_idx][ADC_flag * 16]     = ADC_rx_data[3];
-        data_TX_flash[tx_write_idx][ADC_flag * 16 + 1] = ADC_rx_data[4];
-        data_TX_flash[tx_write_idx][ADC_flag * 16 + 2]     = ADC_rx_data[5];
-        data_TX_flash[tx_write_idx][ADC_flag * 16 + 3] = ADC_rx_data[6];
-        data_TX_flash[tx_write_idx][ADC_flag * 16 + 4]     = ADC_rx_data[7];
-        data_TX_flash[tx_write_idx][ADC_flag * 16 + 5] = ADC_rx_data[8];
-        data_TX_flash[tx_write_idx][ADC_flag * 16 + 6]     = ADC_rx_data[9];
-        data_TX_flash[tx_write_idx][ADC_flag * 16 + 7] = ADC_rx_data[10];
-        data_TX_flash[tx_write_idx][ADC_flag * 16 + 8]     = ADC_rx_data[11];
-        data_TX_flash[tx_write_idx][ADC_flag * 16 + 9] = ADC_rx_data[12];
-        data_TX_flash[tx_write_idx][ADC_flag * 16 + 10]     = ADC_rx_data[13];
-        data_TX_flash[tx_write_idx][ADC_flag * 16 + 11] = ADC_rx_data[14];
-        data_TX_flash[tx_write_idx][ADC_flag * 16 + 12]     = ADC_rx_data[15];
-        data_TX_flash[tx_write_idx][ADC_flag * 16 + 13] = ADC_rx_data[16];
-        data_TX_flash[tx_write_idx][ADC_flag * 16 + 14]     = ADC_rx_data[17];
-        data_TX_flash[tx_write_idx][ADC_flag * 16 + 15] = ADC_rx_data[18];
+              memcpy(&data_TX_flash[tx_write_idx][ADC_flag * 16], &ADC_rx_data[3],  16 * sizeof(data_TX_flash[0][0]));
               ADC_flag++;
             }
           if(erase_flag == 1){
@@ -723,22 +708,30 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
               erase_flag = 0;
           }
             if (ADC_flag >= 16) { 
-                HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
-                Memory_Interleaved_Fast(data_TX_flash[tx_ready_idx]);
-                HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
+                //Memory_Interleaved_Fast(data_TX_flash[tx_ready_idx]);
+                memcpy(&FlashW_b[0],data_TX_flash[tx_ready_idx],256); 
+                EXTI->SWIER |= (1<<5) | (1<<6);
                 tx_ready_idx = tx_write_idx;   // запоминаем готовый буфер
                 tx_write_idx ^= 1;             // переключаемся на второй
                 ADC_flag = 0;    
             }
-          
-      popa = 0;
-      }
-      popa++;
       }
 
     }
 }
 
+void EXTI9_5_IRQHandler()
+{
+  int exti = EXTI -> PR;  
+  
+   if ((exti & 0x0060) == 0x0060)      // Ждем пока установятся флаги от АЦП
+   {
+  
+   Memory_Interleaved_Fast(&FlashW_b[0]);
+    
+    EXTI -> PR = 0x0060;              // Сбросить запрос программных прерываний    
+  }
+}
 
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
@@ -793,6 +786,7 @@ void Task_ADC_Data(void *argument)
             }
             prev_state = current_state;
         }
+        
 
         osDelay(1);  
     }
@@ -825,8 +819,6 @@ void Task_ModBus(void *argument)
 * @retval None
 */
 /* USER CODE END Header_Task_Flash_data */
-uint8_t bubba_tx[256] = {1, 54, 213, 64 ,145 , 13};
-uint8_t bubba_rx[256] = {0};
 void Task_Flash_data(void *argument)
 {
   /* USER CODE BEGIN Task_Flash_data */
@@ -834,20 +826,7 @@ void Task_Flash_data(void *argument)
 
   for(;;)
   {
-    if(experement == 1){
-    Flash_Receive(popa,256, &bubba_rx[0]);
-      experement = 0;
-    }
-    
-    if(experement == 2){
-    Flash_Transmit(popa,256, &bubba_tx[0]);
-      experement = 0;
-    }
-    
-        if(experement == 3){
-    Flash_SectorErase(popa,256);
-      experement = 0;
-    }
+      
       osDelay(1);
   }
   /* USER CODE END Task_Flash_data */
