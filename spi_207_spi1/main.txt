@@ -1,0 +1,5 @@
+        cs_low();
+		SPI_DMA_Transmit(test_data, 19);
+		while(finished_transfer()==0){;}
+		reset_finished();
+		cs_high();

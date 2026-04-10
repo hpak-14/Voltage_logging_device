@@ -1,7 +1,7 @@
 #include "stm32f2xx_hal.h"
 #include "stm32f2xx_hal_spi.h"
 #include "stm32f2xx_hal_gpio.h"
-
+#include "spi_dma.h"
 
 
 

@@ -94,9 +94,9 @@ void Flash_SectorErase(uint8_t num_pin, uint32_t addr)
  
 void Flash_ChipErase(uint8_t num_pin){
   Flash_cmd(CMD_WRITE_ENABLE, num_pin);
-  HAL_Delay(10);
+  HAL_Delay(4);
   Flash_cmd(CMD_CHIP_ERASE, num_pin);
-  HAL_Delay(10);
+  HAL_Delay(4);
   //Flash_WaitBusy(num_pin);
 }
 
@@ -194,7 +194,7 @@ uint32_t erase_flag = 0;
 
 void Memory_Interleaved_Fast(uint8_t *data_TX)
 {
-                  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+                 
     uint8_t target_chip = current_chip;
 
     /* зацикливание адреса */
@@ -233,7 +233,7 @@ void Memory_Interleaved_Fast(uint8_t *data_TX)
     
     /* следующий чип */
     current_chip = (target_chip + 1) % CHIPS_COUNT;
-                    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
+                    
 }
 
 

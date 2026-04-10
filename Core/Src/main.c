@@ -46,10 +46,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
-DMA_HandleTypeDef hdma_spi1_rx;
-DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_spi2_rx;
 DMA_HandleTypeDef hdma_spi2_tx;
 
@@ -110,7 +107,6 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_UART4_Init(void);
 static void MX_SPI2_Init(void);
-static void MX_SPI1_Init(void);
 static void MX_TIM6_Init(void);
 void Task_ADC_Data(void *argument);
 void Task_ModBus(void *argument);
@@ -195,6 +191,7 @@ int main(void)
   RMS_Init(&ch[5], 3200);
   RMS_Init(&ch[6], 3200);
   RMS_Init(&ch[7], 3200);
+  
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -203,7 +200,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -218,10 +215,10 @@ int main(void)
   MX_DMA_Init();
   MX_UART4_Init();
   MX_SPI2_Init();
-  MX_SPI1_Init();
   MX_TIM6_Init();
 
   /* Initialize interrupts */
+  spi_DMA_Init();
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
   
@@ -236,6 +233,7 @@ int main(void)
 
 
   flash_Init();
+  
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -358,46 +356,8 @@ void SystemClock_Config(void)
 static void MX_NVIC_Init(void)
 {
   /* EXTI2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(EXTI2_IRQn, 7, 0);
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 6, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
-}
-
-/**
-  * @brief SPI1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_SPI1_Init(void)
-{
-
-  /* USER CODE BEGIN SPI1_Init 0 */
-
-  /* USER CODE END SPI1_Init 0 */
-
-  /* USER CODE BEGIN SPI1_Init 1 */
-
-  /* USER CODE END SPI1_Init 1 */
-  /* SPI1 parameter configuration*/
-  hspi1.Instance = SPI1;
-  hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
-  hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
-  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi1.Init.CRCPolynomial = 10;
-  if (HAL_SPI_Init(&hspi1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN SPI1_Init 2 */
-
-  /* USER CODE END SPI1_Init 2 */
-
 }
 
 /**
@@ -518,21 +478,14 @@ static void MX_DMA_Init(void)
 
   /* DMA controller clock enable */
   __HAL_RCC_DMA1_CLK_ENABLE();
-  __HAL_RCC_DMA2_CLK_ENABLE();
 
   /* DMA interrupt init */
   /* DMA1_Stream3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 10, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream3_IRQn);
   /* DMA1_Stream4_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 10, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);
-  /* DMA2_Stream0_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 6, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
-  /* DMA2_Stream3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 6, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
 
 }
 
@@ -557,10 +510,8 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, RESET_Pin|PWDN_Pin|GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_SET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(SPI1_CS_ADC_GPIO_Port, SPI1_CS_ADC_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, RESET_Pin|PWDN_Pin|SPI1_CS_ADC_Pin|GPIO_PIN_0
+                          |GPIO_PIN_1, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, ETH_RST_Pin|SPI1_CSf6_Pin, GPIO_PIN_RESET);
@@ -584,14 +535,19 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : RESET_Pin PWDN_Pin SPI1_CS_ADC_Pin PE0
-                           PE1 */
-  GPIO_InitStruct.Pin = RESET_Pin|PWDN_Pin|SPI1_CS_ADC_Pin|GPIO_PIN_0
-                          |GPIO_PIN_1;
+  /*Configure GPIO pins : RESET_Pin PWDN_Pin PE0 PE1 */
+  GPIO_InitStruct.Pin = RESET_Pin|PWDN_Pin|GPIO_PIN_0|GPIO_PIN_1;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : SPI1_CS_ADC_Pin */
+  GPIO_InitStruct.Pin = SPI1_CS_ADC_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  HAL_GPIO_Init(SPI1_CS_ADC_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : ETH_RST_Pin SPI1_CSf6_Pin */
   GPIO_InitStruct.Pin = ETH_RST_Pin|SPI1_CSf6_Pin;
@@ -637,6 +593,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : PB3 PB4 PB5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
   /* USER CODE END MX_GPIO_Init_2 */
@@ -652,11 +616,6 @@ static void MX_GPIO_Init(void)
       {
         delay(10);
         FLASH_CS_HIGH(CS_num);
-        
-        //if (erase_flag){
-        //Flash_SectorErase(erase_chip, erase_sector);
-        //erase_flag = 0;
-        //}
       }   
   }
 
@@ -671,21 +630,24 @@ static void MX_GPIO_Init(void)
   
 uint32_t FlashW = 0;
 uint8_t  FlashW_b[256] = {0};
-void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
+void DMA2_Stream0_IRQHandler(void)
 {
-  if (hspi == &hspi1){
-      if(flag_ADC && hspi == &hspi1){
-          delay(4);
-          ADC_CS_HIGH;
-      
+    if (DMA2->LISR & DMA_LISR_TCIF0)
+    {
+        cs_high();
+        DMA2_Stream0->CR &= ~DMA_SxCR_EN;
+        DMA2->LIFCR = DMA_LIFCR_CTCIF0;
+        SPI_Transfer_Finished = 1;
+        //delay(4);
+        
       ADC_16[0] = (int16_t)(((uint16_t)ADC_rx_data[3]  << 8) | ADC_rx_data[4]);   // CH1
       ADC_16[1] = (int16_t)(((uint16_t)ADC_rx_data[5]  << 8) | ADC_rx_data[6]);   // CH2
-      //ADC_16[2] = (int16_t)(((uint16_t)ADC_rx_data[7]  << 8) | ADC_rx_data[8]);   // CH3
-      //ADC_16[3] = (int16_t)(((uint16_t)ADC_rx_data[9]  << 8) | ADC_rx_data[10]);  // CH4
-      //ADC_16[4] = (int16_t)(((uint16_t)ADC_rx_data[11] << 8) | ADC_rx_data[12]);  // CH5
-      //ADC_16[5] = (int16_t)(((uint16_t)ADC_rx_data[13] << 8) | ADC_rx_data[14]);  // CH6
-      //ADC_16[6] = (int16_t)(((uint16_t)ADC_rx_data[15] << 8) | ADC_rx_data[16]);  // CH7
-      //ADC_16[7] = (int16_t)(((uint16_t)ADC_rx_data[17] << 8) | ADC_rx_data[18]);  // CH8
+      ADC_16[2] = (int16_t)(((uint16_t)ADC_rx_data[7]  << 8) | ADC_rx_data[8]);   // CH3
+      ADC_16[3] = (int16_t)(((uint16_t)ADC_rx_data[9]  << 8) | ADC_rx_data[10]);  // CH4
+      ADC_16[4] = (int16_t)(((uint16_t)ADC_rx_data[11] << 8) | ADC_rx_data[12]);  // CH5
+      ADC_16[5] = (int16_t)(((uint16_t)ADC_rx_data[13] << 8) | ADC_rx_data[14]);  // CH6
+      ADC_16[6] = (int16_t)(((uint16_t)ADC_rx_data[15] << 8) | ADC_rx_data[16]);  // CH7
+      ADC_16[7] = (int16_t)(((uint16_t)ADC_rx_data[17] << 8) | ADC_rx_data[18]);  // CH8
       /*
       RMS_Sample(&ch[0], ADC_16[0]);
       RMS_Sample(&ch[1], ADC_16[1]);
@@ -697,41 +659,42 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
       RMS_Sample(&ch[7], ADC_16[7]);
       */
       
-
       
           if (ADC_flag < 16) {
-              memcpy(&data_TX_flash[tx_write_idx][ADC_flag * 16], &ADC_rx_data[3],  16 * sizeof(data_TX_flash[0][0]));
+        data_TX_flash[tx_write_idx][ADC_flag * 16]     = ADC_rx_data[3];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 1] = ADC_rx_data[4];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 2]     = ADC_rx_data[5];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 3] = ADC_rx_data[6];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 4]     = ADC_rx_data[7];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 5] = ADC_rx_data[8];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 6]     = ADC_rx_data[9];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 7] = ADC_rx_data[10];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 8]     = ADC_rx_data[11];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 9] = ADC_rx_data[12];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 10]     = ADC_rx_data[13];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 11] = ADC_rx_data[14];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 12]     = ADC_rx_data[15];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 13] = ADC_rx_data[16];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 14]     = ADC_rx_data[17];
+        data_TX_flash[tx_write_idx][ADC_flag * 16 + 15] = ADC_rx_data[18];
               ADC_flag++;
             }
-          if(erase_flag == 1){
-              Flash_SectorErase(erase_chip, erase_sector);
-              erase_flag = 0;
-          }
+          //if(erase_flag == 1){
+         //     Flash_SectorErase(erase_chip, erase_sector);
+         //     erase_flag = 0;
+         // }
             if (ADC_flag >= 16) { 
-                //Memory_Interleaved_Fast(data_TX_flash[tx_ready_idx]);
-                memcpy(&FlashW_b[0],data_TX_flash[tx_ready_idx],256); 
-                EXTI->SWIER |= (1<<5) | (1<<6);
+                Memory_Interleaved_Fast(data_TX_flash[tx_ready_idx]);
                 tx_ready_idx = tx_write_idx;   // запоминаем готовый буфер
                 tx_write_idx ^= 1;             // переключаемся на второй
                 ADC_flag = 0;    
             }
-      }
-
-    }
-}
-
-void EXTI9_5_IRQHandler()
-{
-  int exti = EXTI -> PR;  
-  
-   if ((exti & 0x0060) == 0x0060)      // Ждем пока установятся флаги от АЦП
-   {
-  
-   Memory_Interleaved_Fast(&FlashW_b[0]);
+            }
     
-    EXTI -> PR = 0x0060;              // Сбросить запрос программных прерываний    
-  }
+    
 }
+
+
 
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
@@ -744,8 +707,8 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-    delay(4);
-    ADS131E0_DataRead();
+    //delay(4);
+  ADS131E0_DataRead();
 }
 
 
@@ -783,6 +746,8 @@ void Task_ADC_Data(void *argument)
                 ADC_START_ON;
             } else {
                 ADC_START_OFF;
+                
+                
             }
             prev_state = current_state;
         }
